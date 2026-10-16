@@ -1,4 +1,8 @@
+mod breaks;
+mod db;
+mod idle;
 mod popup;
+mod timer;
 mod tray;
 
 use tauri::{Manager, RunEvent, WindowEvent};
@@ -25,6 +29,7 @@ pub fn run() {
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             tray::build(app.handle())?;
+            breaks::start(app.handle());
 
             // Dev convenience: `KALK_SHOW=1 npm run tauri dev` opens the popup
             // immediately instead of waiting for a tray click.
@@ -48,7 +53,13 @@ pub fn run() {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![popup::hide_popup, quit_app])
+        .invoke_handler(tauri::generate_handler![
+            popup::hide_popup,
+            quit_app,
+            breaks::get_status,
+            breaks::answer,
+            breaks::resume_breaks,
+        ])
         .build(tauri::generate_context!())
         .expect("error while building Kalk")
         .run(|_app, event| {

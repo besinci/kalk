@@ -1,7 +1,8 @@
 //! The tray popup: one frameless window anchored to the tray icon.
 //!
 //! Info mode (opened by the user) hides when it loses focus.
-//! Reminder mode (milestone 3) will set `pinned` so it stays up until answered.
+//! Reminder mode (opened by the timer) is pinned: it shows without taking
+//! keyboard focus and stays up until the reminder is answered.
 
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -88,21 +89,86 @@ fn place<R: Runtime>(w: &WebviewWindow<R>, app: &AppHandle<R>) -> tauri::Result<
     w.set_position(PhysicalPosition::new(x, y))
 }
 
+fn is_pinned<R: Runtime>(app: &AppHandle<R>) -> bool {
+    app.state::<PopupState>().pinned.load(Ordering::Relaxed)
+}
+
 pub fn show<R: Runtime>(app: &AppHandle<R>) {
     let Some(w) = window(app) else { return };
-    let _ = place(&w, app);
+    if !w.is_visible().unwrap_or(false) {
+        let _ = place(&w, app);
+    }
+    let _ = w.set_focusable(true);
     let _ = w.show();
     let _ = w.set_focus();
 }
 
-pub fn hide<R: Runtime>(app: &AppHandle<R>) {
-    if let Some(w) = window(app) {
-        let _ = w.hide();
+/// Opens the popup in reminder mode without stealing keyboard focus from
+/// whatever the user is typing into.
+pub fn show_reminder<R: Runtime>(app: &AppHandle<R>) {
+    app.state::<PopupState>()
+        .pinned
+        .store(true, Ordering::Relaxed);
+    let Some(w) = window(app) else { return };
+    if w.is_visible().unwrap_or(false) {
+        return;
     }
+    let _ = place(&w, app);
+    let _ = w.set_focusable(false);
+    show_inactive(&w);
+}
+
+/// Tao's `show` activates the window on Windows, so call ShowWindow directly.
+#[cfg(windows)]
+fn show_inactive<R: Runtime>(w: &WebviewWindow<R>) {
+    use windows::Win32::UI::WindowsAndMessaging::{SW_SHOWNOACTIVATE, ShowWindow};
+    if let Ok(hwnd) = w.hwnd() {
+        // SAFETY: hwnd belongs to a live window owned by this process.
+        let _ = unsafe { ShowWindow(hwnd, SW_SHOWNOACTIVATE) };
+    }
+}
+
+/// A non-focusable window is ordered front without becoming key.
+#[cfg(not(windows))]
+fn show_inactive<R: Runtime>(w: &WebviewWindow<R>) {
+    let _ = w.show();
+}
+
+/// Hides the popup unless a reminder is waiting for an answer.
+pub fn hide<R: Runtime>(app: &AppHandle<R>) {
+    if is_pinned(app) {
+        return;
+    }
+    let Some(w) = window(app) else { return };
+    let _ = w.hide();
+    // `show_inactive` bypasses tao, so tao may think the window is already
+    // hidden and skip hiding it.
+    #[cfg(windows)]
+    if let Ok(hwnd) = w.hwnd() {
+        use windows::Win32::UI::WindowsAndMessaging::{SW_HIDE, ShowWindow};
+        // SAFETY: as in `show_inactive`.
+        let _ = unsafe { ShowWindow(hwnd, SW_HIDE) };
+    }
+}
+
+/// Leaves reminder mode once it has been answered, and hides the popup.
+pub fn release<R: Runtime>(app: &AppHandle<R>) {
+    app.state::<PopupState>()
+        .pinned
+        .store(false, Ordering::Relaxed);
+    if let Some(w) = window(app) {
+        let _ = w.set_focusable(true);
+    }
+    hide(app);
 }
 
 pub fn toggle<R: Runtime>(app: &AppHandle<R>) {
     let Some(w) = window(app) else { return };
+    if is_pinned(app) {
+        // An open reminder can't be dismissed by clicking the tray; focus it.
+        show(app);
+        return;
+    }
     if w.is_visible().unwrap_or(false) {
         hide(app);
         return;
@@ -119,11 +185,10 @@ pub fn toggle<R: Runtime>(app: &AppHandle<R>) {
 }
 
 pub fn on_blur<R: Runtime>(app: &AppHandle<R>) {
-    let state = app.state::<PopupState>();
-    if state.pinned.load(Ordering::Relaxed) {
+    if is_pinned(app) {
         return;
     }
-    *state.last_blur_hide.lock().unwrap() = Some(Instant::now());
+    *app.state::<PopupState>().last_blur_hide.lock().unwrap() = Some(Instant::now());
     hide(app);
 }
 
