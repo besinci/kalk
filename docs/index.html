@@ -48,6 +48,9 @@
     nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; color: var(--text); text-decoration: none; }
     .brand img { width: 34px; height: 34px; border-radius: 9px; }
+    .nav-links { display: flex; align-items: center; gap: 16px; }
+    .lang { font: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+    .lang:hover { color: var(--text); background: var(--accent-soft); }
     nav .gh { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 15px; }
     nav .gh:hover { color: var(--text); }
 
@@ -133,22 +136,25 @@
   <div class="wrap">
     <nav>
       <a class="brand" href="./"><img src="icon.png" alt="" width="34" height="34">Kalk</a>
-      <a class="gh" href="https://github.com/besinci/kalk">GitHub →</a>
+      <div class="nav-links">
+        <button class="lang" id="lang" type="button" aria-label="Türkçe" title="Türkçe">TR</button>
+        <a class="gh" href="https://github.com/besinci/kalk">GitHub →</a>
+      </div>
     </nav>
 
     <header class="hero">
       <div>
-        <span class="eyebrow">Free · Open source · No account</span>
-        <h1>Sitting all day?<br><em>Kalk.</em></h1>
-        <p class="lede">
+        <span class="eyebrow" data-tr="Ücretsiz · Açık kaynak · Hesap gerekmez">Free · Open source · No account</span>
+        <h1 data-tr="Bütün gün oturuyor musun?&lt;br&gt;&lt;em&gt;Kalk.&lt;/em&gt;">Sitting all day?<br><em>Kalk.</em></h1>
+        <p class="lede" data-tr="Bilgisayar başında &lt;strong&gt;her 45 dakikada bir 10 squat&lt;/strong&gt; yapmanı hatırlatan küçük bir tepsi uygulaması. Bir dakika, spor salonu yok, daha iyi kan şekeri.">
           A tiny tray app that reminds you to do <strong>10 squats after every 45 minutes</strong>
           at the computer. One minute, no gym, better blood sugar.
         </p>
         <div class="cta">
-          <a class="button primary" href="https://github.com/besinci/kalk/releases/latest">Download</a>
-          <a class="button secondary" href="https://github.com/besinci/kalk">View on GitHub</a>
+          <a class="button primary" href="https://github.com/besinci/kalk/releases/latest" data-tr="İndir">Download</a>
+          <a class="button secondary" href="https://github.com/besinci/kalk" data-tr="GitHub&#x27;da incele">View on GitHub</a>
         </div>
-        <p class="platforms">Windows 10/11 · macOS 11+ · English &amp; Türkçe</p>
+        <p class="platforms" data-tr="Windows 10/11 · macOS 11+ · Türkçe ve İngilizce">Windows 10/11 · macOS 11+ · English &amp; Türkçe</p>
       </div>
       <div class="stage" aria-hidden="true">
         <div class="figure">
@@ -172,23 +178,23 @@
         <figure>
           <picture>
             <source media="(prefers-color-scheme: dark)" srcset="screenshots/info-dark.png">
-            <img src="screenshots/info-light.png" width="340" height="480" alt="Kalk popup: next squat break in 23 min, today 5 of 8 breaks" loading="lazy">
+            <img src="screenshots/info-light.png" width="340" height="480" alt="Kalk popup: next squat break in 23 min, today 5 of 8 breaks" data-tr-alt="Kalk penceresi: sonraki squat molasına 23 dk, bugün 8 moladan 5&#x27;i" loading="lazy">
           </picture>
-          <figcaption>Click the tray icon for your countdown</figcaption>
+          <figcaption data-tr="Geri sayım için tepsi simgesine tıkla">Click the tray icon for your countdown</figcaption>
         </figure>
         <figure>
           <picture>
             <source media="(prefers-color-scheme: dark)" srcset="screenshots/reminder-dark.png">
-            <img src="screenshots/reminder-light.png" width="340" height="480" alt="Reminder: time for 10 squats, with Done, Snooze and Skip" loading="lazy">
+            <img src="screenshots/reminder-light.png" width="340" height="480" alt="Reminder: time for 10 squats, with Done, Snooze and Skip" data-tr-alt="Hatırlatma: 10 squat zamanı; Yaptım, Ertele ve Atla" loading="lazy">
           </picture>
-          <figcaption>Squat along when it's time</figcaption>
+          <figcaption data-tr="Zamanı gelince birlikte squat yap">Squat along when it's time</figcaption>
         </figure>
         <figure>
           <picture>
             <source media="(prefers-color-scheme: dark)" srcset="screenshots/stats-dark.png">
-            <img src="screenshots/stats-light.png" width="340" height="480" alt="Stats: today, streak, total squats and the last 7 days" loading="lazy">
+            <img src="screenshots/stats-light.png" width="340" height="480" alt="Stats: today, streak, total squats and the last 7 days" data-tr-alt="İstatistikler: bugün, seri, toplam squat ve son 7 gün" loading="lazy">
           </picture>
-          <figcaption>Watch your streak grow</figcaption>
+          <figcaption data-tr="Serinin büyüdüğünü izle">Watch your streak grow</figcaption>
         </figure>
       </div>
     </div>
@@ -197,73 +203,73 @@
   <div class="wrap">
     <section class="study" id="why">
       <div>
-        <h2>Why squats every 45 minutes?</h2>
-        <p class="quote">Short, frequent breaks beat one long walk.</p>
-        <p class="sub" style="margin-bottom:0">
+        <h2 data-tr="Neden her 45 dakikada squat?">Why squats every 45 minutes?</h2>
+        <p class="quote" data-tr="Kısa ve sık molalar tek bir uzun yürüyüşten iyidir.">Short, frequent breaks beat one long walk.</p>
+        <p class="sub" style="margin-bottom:0" data-tr="2024&#x27;te yapılan bir çalışma, 8,5 saatlik oturmayı geçirmenin dört yolunu karşılaştırdı. Bu süreyi her 45 dakikada 10 squat — ya da 3 dakikalık bir yürüyüş — ile bölmek, kan şekeri yanıtını tek bir 30 dakikalık yürüyüşten daha fazla düşürdü.">
           A 2024 study compared four ways of spending 8.5 hours of sitting. Breaking it up with
           10 squats — or a 3‑minute walk — every 45 minutes lowered the blood‑sugar response more
           than a single 30‑minute walk.
         </p>
-        <p class="note">
+        <p class="note" data-tr="Küçük bir çalışma: fazla kilolu veya obez 18 erkek. Bunu bir vaat değil, bir hatırlatma olarak gör. &lt;a href=&quot;https://doi.org/10.1111/sms.14628&quot;&gt;Makaleyi oku&lt;/a&gt; (Scand J Med Sci Sports, 2024).">
           Small study: 18 men with overweight or obesity. Treat it as a nudge, not a promise.
           <a href="https://doi.org/10.1111/sms.14628">Read the paper</a>
           (Scand J Med Sci Sports, 2024).
         </p>
       </div>
       <div>
-        <ul class="compare" aria-label="The four sitting patterns compared in the study">
-          <li><span class="label">Sitting all day</span><span>Baseline</span></li>
-          <li><span class="label">One 30‑min walk</span><span>One long break</span></li>
-          <li class="win"><span class="label">3‑min walk every 45 min</span><span>Lower blood‑sugar response</span></li>
-          <li class="win"><span class="label">10 squats every 45 min</span><span>Lower blood‑sugar response — without leaving your desk</span></li>
+        <ul class="compare" aria-label="The four sitting patterns compared in the study" data-tr-aria="Çalışmada karşılaştırılan dört oturma düzeni">
+          <li><span class="label" data-tr="Bütün gün oturmak">Sitting all day</span><span data-tr="Karşılaştırma noktası">Baseline</span></li>
+          <li><span class="label" data-tr="Tek bir 30 dk yürüyüş">One 30‑min walk</span><span data-tr="Tek uzun mola">One long break</span></li>
+          <li class="win"><span class="label" data-tr="Her 45 dk&#x27;da 3 dk yürüyüş">3‑min walk every 45 min</span><span data-tr="Daha düşük kan şekeri yanıtı">Lower blood‑sugar response</span></li>
+          <li class="win"><span class="label" data-tr="Her 45 dk&#x27;da 10 squat">10 squats every 45 min</span><span data-tr="Daha düşük kan şekeri yanıtı — masandan ayrılmadan">Lower blood‑sugar response — without leaving your desk</span></li>
         </ul>
       </div>
     </section>
 
     <section id="features">
-      <h2>Stays out of the way until it's time</h2>
-      <p class="sub">Kalk lives in your tray or menu bar. You'll only notice it when it's time to get up.</p>
+      <h2 data-tr="Zamanı gelene kadar ortalıkta görünmez">Stays out of the way until it's time</h2>
+      <p class="sub" data-tr="Kalk tepside ya da menü çubuğunda durur. Onu yalnızca kalkma vakti geldiğinde fark edersin.">Kalk lives in your tray or menu bar. You'll only notice it when it's time to get up.</p>
       <div class="features">
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
-          <h3>Counts real computer time</h3>
-          <p>The timer only runs while you use the keyboard or mouse. Step away or sleep the machine and it starts over.</p>
+          <h3 data-tr="Gerçek bilgisayar süresini sayar">Counts real computer time</h3>
+          <p data-tr="Sayaç yalnızca klavyeyi ya da fareyi kullanırken çalışır. Bilgisayardan uzaklaş ya da uyku moduna al, sayaç baştan başlar.">The timer only runs while you use the keyboard or mouse. Step away or sleep the machine and it starts over.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></div>
-          <h3>Doesn't steal focus</h3>
-          <p>The reminder pops up by the tray with a chime but leaves your keyboard alone. Done, Snooze or Skip.</p>
+          <h3 data-tr="Odağını çalmaz">Doesn't steal focus</h3>
+          <p data-tr="Hatırlatma tepsinin yanında bir sesle açılır ama klavyene dokunmaz. Yaptım, Ertele ya da Atla.">The reminder pops up by the tray with a chime but leaves your keyboard alone. Done, Snooze or Skip.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v5l-4 3v4M12 13l4 3v4M7 10h10"/></svg></div>
-          <h3>Squat along</h3>
-          <p>An animated character does the reps with a counter, so you don't have to count.</p>
+          <h3 data-tr="Birlikte squat yap">Squat along</h3>
+          <p data-tr="Hareketli bir karakter tekrarları sayaçla birlikte yapar, saymana gerek kalmaz.">An animated character does the reps with a counter, so you don't have to count.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
-          <h3>Respects your day</h3>
-          <p>Active hours and days, plus Pause for 1 hour or for today, right from the tray menu.</p>
+          <h3 data-tr="Gününe saygı duyar">Respects your day</h3>
+          <p data-tr="Aktif saatler ve günler; ayrıca tepsi menüsünden 1 saatlik ya da bugünlük duraklatma.">Active hours and days, plus Pause for 1 hour or for today, right from the tray menu.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24"><path d="M5 20V12M12 20V5M19 20v-9"/></svg></div>
-          <h3>Streaks and stats</h3>
-          <p>Today against your goal, your streak, the last 7 days and every squat you've done.</p>
+          <h3 data-tr="Seriler ve istatistikler">Streaks and stats</h3>
+          <p data-tr="Günlük hedefine göre bugün, serin, son 7 gün ve bugüne kadar yaptığın tüm squatlar.">Today against your goal, your streak, the last 7 days and every squat you've done.</p>
         </div>
         <div class="card">
           <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg></div>
-          <h3>Make it yours</h3>
-          <p>Interval, reps, daily goal, snooze length, sound, launch at login. English and Türkçe.</p>
+          <h3 data-tr="Kendine göre ayarla">Make it yours</h3>
+          <p data-tr="Aralık, tekrar, günlük hedef, erteleme süresi, ses, oturum açılınca başlatma. Türkçe ve İngilizce.">Interval, reps, daily goal, snooze length, sound, launch at login. English and Türkçe.</p>
         </div>
       </div>
     </section>
 
     <section id="how">
-      <h2>How it works</h2>
-      <p class="sub">Install it once. Kalk starts with your computer and takes it from there.</p>
+      <h2 data-tr="Nasıl çalışır">How it works</h2>
+      <p class="sub" data-tr="Bir kez kur. Kalk bilgisayarınla birlikte açılır ve gerisini halleder.">Install it once. Kalk starts with your computer and takes it from there.</p>
       <ol class="steps">
-        <li><strong>Work as usual</strong>Kalk counts 45 minutes of active time in the background.</li>
-        <li><strong>Get the nudge</strong>A small popup opens by the tray: time for 10 squats.</li>
-        <li><strong>Squat, tap Done</strong>About a minute. Your streak grows, and the timer starts again.</li>
+        <li data-tr="&lt;strong&gt;Her zamanki gibi çalış&lt;/strong&gt;Kalk arka planda 45 dakikalık aktif süreyi sayar."><strong>Work as usual</strong>Kalk counts 45 minutes of active time in the background.</li>
+        <li data-tr="&lt;strong&gt;Hatırlatmayı al&lt;/strong&gt;Tepsinin yanında küçük bir pencere açılır: 10 squat zamanı."><strong>Get the nudge</strong>A small popup opens by the tray: time for 10 squats.</li>
+        <li data-tr="&lt;strong&gt;Squat yap, Yaptım&#x27;a bas&lt;/strong&gt;Yaklaşık bir dakika. Serin büyür, sayaç yeniden başlar."><strong>Squat, tap Done</strong>About a minute. Your streak grows, and the timer starts again.</li>
       </ol>
     </section>
 
@@ -271,28 +277,97 @@
       <div class="privacy">
         <div class="icon"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
         <div>
-          <h2>Everything stays on your computer</h2>
-          <p>No account, no cloud, no telemetry. Kalk only checks <em>how long ago</em> you last touched the
+          <h2 data-tr="Her şey bilgisayarında kalır">Everything stays on your computer</h2>
+          <p data-tr="Hesap yok, bulut yok, telemetri yok. Kalk yalnızca klavyeye ya da fareye en son &lt;em&gt;ne zaman&lt;/em&gt; dokunduğuna bakar, ne yazdığına asla. Ayarların ve mola kaydın bilgisayarındaki dosyalarda durur.">No account, no cloud, no telemetry. Kalk only checks <em>how long ago</em> you last touched the
           keyboard or mouse, never what you typed. Your settings and break log are local files.</p>
         </div>
       </div>
     </section>
 
     <section class="final">
-      <h2>Kalk! Get up.</h2>
-      <p class="sub" style="margin-left:auto;margin-right:auto">Free and open source under the MIT license.</p>
+      <h2 data-tr="Kalk! Hadi ayağa.">Kalk! Get up.</h2>
+      <p class="sub" style="margin-left:auto;margin-right:auto" data-tr="MIT lisansıyla ücretsiz ve açık kaynak.">Free and open source under the MIT license.</p>
       <div class="cta">
-        <a class="button primary" href="https://github.com/besinci/kalk/releases/latest">Download for Windows &amp; macOS</a>
+        <a class="button primary" href="https://github.com/besinci/kalk/releases/latest" data-tr="Windows ve macOS için indir">Download for Windows &amp; macOS</a>
       </div>
     </section>
 
     <footer>
-      <span>Kalk — Turkish for “get up!”</span>
-      <span><a href="https://github.com/besinci/kalk">Source</a> · <a href="https://github.com/besinci/kalk/blob/main/LICENSE">MIT license</a></span>
+      <span data-tr="Kalk — bazen tek gereken bu kelime.">Kalk — Turkish for “get up!”</span>
+      <span><a href="https://github.com/besinci/kalk" data-tr="Kaynak kod">Source</a> · <a href="https://github.com/besinci/kalk/blob/main/LICENSE" data-tr="MIT lisansı">MIT license</a></span>
     </footer>
   </div>
 
   <script>
+    // English is in the markup; Turkish sits next to it in data-tr* attributes.
+    // Turkish is the default when the browser prefers it; the TR / EN button
+    // overrides that, and ?lang=tr|en wins over both.
+    (function () {
+      const META = {
+        en: {
+          title: document.title,
+          description: document.querySelector('meta[name="description"]').content,
+        },
+        tr: {
+          title: "Kalk — Her 45 dakikada 10 squat",
+          description: "Windows ve macOS için, bilgisayar başında her 45 dakikada bir 10 squat yapmanı hatırlatan küçük bir tepsi uygulaması. Ücretsiz, açık kaynak, hesap gerekmez.",
+        },
+      };
+      const button = document.getElementById("lang");
+
+      function stored() {
+        try { return localStorage.getItem("kalk-lang"); } catch { return null; }
+      }
+      function store(lang) {
+        try { localStorage.setItem("kalk-lang", lang); } catch {}
+      }
+      function initial() {
+        const param = new URLSearchParams(location.search).get("lang");
+        if (param === "tr" || param === "en") return param;
+        const saved = stored();
+        if (saved === "tr" || saved === "en") return saved;
+        const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+        return langs.some((l) => /^tr(-|$)/i.test(l || "")) ? "tr" : "en";
+      }
+
+      function swap(el, attr, get, set) {
+        const enKey = attr + "En";
+        if (el.dataset[enKey] === undefined) el.dataset[enKey] = get(el);
+        set(el, current === "tr" ? el.dataset[attr] : el.dataset[enKey]);
+      }
+
+      let current = "en";
+      function apply(lang) {
+        current = lang;
+        document.documentElement.lang = lang;
+        document.title = META[lang].title;
+        document.querySelector('meta[name="description"]').content = META[lang].description;
+        document.querySelectorAll("[data-tr]").forEach((el) =>
+          swap(el, "tr", (e) => e.innerHTML, (e, v) => (e.innerHTML = v)));
+        document.querySelectorAll("[data-tr-alt]").forEach((el) =>
+          swap(el, "trAlt", (e) => e.alt, (e, v) => (e.alt = v)));
+        document.querySelectorAll("[data-tr-aria]").forEach((el) =>
+          swap(el, "trAria", (e) => e.getAttribute("aria-label"), (e, v) => e.setAttribute("aria-label", v)));
+        // Turkish screenshots live in screenshots/tr/.
+        document.querySelectorAll(".shots img, .shots source").forEach((el) => {
+          const attr = el.tagName === "IMG" ? "src" : "srcset";
+          const file = el.getAttribute(attr).split("/").pop();
+          el.setAttribute(attr, (lang === "tr" ? "screenshots/tr/" : "screenshots/") + file);
+        });
+        const other = lang === "tr" ? "en" : "tr";
+        button.textContent = other.toUpperCase();
+        button.title = other === "tr" ? "Türkçe" : "English";
+        button.setAttribute("aria-label", button.title);
+      }
+
+      button.addEventListener("click", () => {
+        const next = current === "tr" ? "en" : "tr";
+        store(next);
+        apply(next);
+      });
+      apply(initial());
+    })();
+
     // The same squatting figure as the app (src/lib/Squatter.svelte): joints
     // posed from one squat depth, 0 = standing, 1 = bottom.
     (function () {
