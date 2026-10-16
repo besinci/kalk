@@ -305,6 +305,7 @@
   }
 
   .hero {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -323,10 +324,18 @@
       height 0.25s;
   }
   .figure.big {
-    width: 140px;
-    height: 140px;
+    width: 124px;
+    height: 124px;
   }
+  /* A badge on the figure, so it doesn't take a row of its own. */
   .reps {
+    position: absolute;
+    bottom: 4px;
+    left: calc(50% + 30px);
+    padding: 2px 10px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--accent);
@@ -363,7 +372,7 @@
     color: var(--accent);
   }
   .prompt p {
-    margin: 0 0 14px;
+    margin: 0 0 12px;
     color: var(--muted);
   }
   .buttons {
@@ -373,7 +382,7 @@
   }
   .primary,
   .secondary {
-    padding: 10px;
+    padding: 9px;
     border-radius: 10px;
     font-weight: 600;
   }
