@@ -50,10 +50,12 @@ snooze length, active hours and days, launch at login, sound and language.
 
 ## Install
 
-Kalk isn't released yet. Until then, the latest build of `main` is on the
-[Actions tab](https://github.com/besinci/kalk/actions/workflows/build.yml):
-open the newest successful run and download `kalk-windows` (NSIS installer) or
-`kalk-macos` (universal `.dmg`).
+Download the latest release from
+[Releases](https://github.com/besinci/kalk/releases/latest):
+`Kalk_<version>_x64-setup.exe` for Windows 10/11, or
+`Kalk_<version>_universal.dmg` for macOS 11+ (Intel and Apple Silicon).
+Builds of the latest `main` are on the
+[Actions tab](https://github.com/besinci/kalk/actions/workflows/build.yml).
 
 - **Windows:** the installer is unsigned, so SmartScreen will warn you —
   *More info → Run anyway*.

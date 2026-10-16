@@ -3,7 +3,14 @@ name: Build
 on:
   push:
     branches: [main]
+    # The website and docs don't affect the app.
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
   pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
   workflow_dispatch:
 
 concurrency:
