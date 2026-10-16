@@ -2,6 +2,7 @@
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
   import { openUrl } from "@tauri-apps/plugin-opener";
+  import Squatter from "$lib/Squatter.svelte";
 
   const STUDY_URL = "https://doi.org/10.1111/sms.14628";
 
@@ -18,10 +19,15 @@
 
   let status = $state<Status | null>(null);
   const reminder = $derived(status?.phase === "reminding" || status?.phase === "asking");
+  /** Reps the character has done so far in the open reminder. */
+  let repsShown = $state(0);
 
   $effect(() => {
     invoke<Status>("get_status").then((s) => (status = s));
-    const unlisten = listen<Status>("status", (e) => (status = e.payload));
+    const unlisten = listen<Status>("status", (e) => {
+      if (e.payload.phase === "reminding" && status?.phase !== "reminding") repsShown = 0;
+      status = e.payload;
+    });
     return () => {
       unlisten.then((f) => f());
     };
@@ -85,14 +91,20 @@
     </div>
   </header>
 
-  <section class="hero" aria-hidden="true">
-    <!-- Placeholder; the animated squatting character lands in milestone 4. -->
-    <div class="figure">
-      <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="6" r="3" />
-        <path d="M4.5 19.5 12 12l7.5 7.5" />
-      </svg>
+  <section class="hero">
+    <div class="figure" class:big={status?.phase === "reminding"} aria-hidden="true">
+      {#if status?.phase === "reminding"}
+        <!-- Squat along: the counter follows the character. -->
+        {#key status.phase}
+          <Squatter period={2.4} reps={status.reps} onrep={(n) => (repsShown = n)} />
+        {/key}
+      {:else}
+        <Squatter />
+      {/if}
     </div>
+    {#if status?.phase === "reminding" && repsShown > 0}
+      <span class="reps" aria-live="polite">{repsShown} / {status.reps}</span>
+    {/if}
   </section>
 
   {#if status?.phase === "reminding"}
@@ -257,44 +269,31 @@
   }
 
   .hero {
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
     padding: 6px 0;
   }
   .figure {
     width: 112px;
     height: 112px;
+    box-sizing: border-box;
+    padding: 14px;
     border-radius: 50%;
     background: var(--accent-soft);
-    display: grid;
-    place-items: center;
+    transition:
+      width 0.25s,
+      height 0.25s;
   }
-  .figure svg {
-    width: 60px;
-    height: 60px;
-    fill: var(--accent);
-    stroke: var(--accent);
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    animation: bob 2.4s ease-in-out infinite;
+  .figure.big {
+    width: 140px;
+    height: 140px;
   }
-  .figure path {
-    fill: none;
-  }
-  @keyframes bob {
-    0%,
-    100% {
-      transform: translateY(4px);
-    }
-    50% {
-      transform: translateY(-4px);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .figure svg {
-      animation: none;
-    }
+  .reps {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
   }
 
   .next {
