@@ -4,6 +4,7 @@
   import { openUrl } from "@tauri-apps/plugin-opener";
   import Settings from "$lib/Settings.svelte";
   import Squatter from "$lib/Squatter.svelte";
+  import Stats from "$lib/Stats.svelte";
   import { fmtClock, fmtLeft, fmtSpan, setLang, t, weekday } from "$lib/i18n.svelte";
   import type { Outcome, SettingsView, Status } from "$lib/types";
 
@@ -11,7 +12,7 @@
 
   let status = $state<Status | null>(null);
   let settings = $state<SettingsView | null>(null);
-  let showSettings = $state(false);
+  let view = $state<"main" | "settings" | "stats">("main");
   const reminder = $derived(status?.phase === "reminding" || status?.phase === "asking");
   /** Reps the character has done so far in the open reminder. */
   let repsShown = $state(0);
@@ -27,7 +28,7 @@
     const unlisten = listen<Status>("status", (e) => {
       if (e.payload.phase === "reminding" && status?.phase !== "reminding") {
         repsShown = 0;
-        showSettings = false;
+        view = "main";
       }
       status = e.payload;
     });
@@ -57,7 +58,7 @@
 
   function onKeydown(e: KeyboardEvent) {
     if (e.key !== "Escape" || reminder) return;
-    if (showSettings) showSettings = false;
+    if (view !== "main") view = "main";
     else hide();
   }
 </script>
@@ -66,12 +67,12 @@
 
 <main>
   <header>
-    {#if showSettings}
+    {#if view !== "main"}
       <div class="brand">
-        <button class="icon" title={t("back")} aria-label={t("back")} onclick={() => (showSettings = false)}>
+        <button class="icon" title={t("back")} aria-label={t("back")} onclick={() => (view = "main")}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
         </button>
-        <span>{t("settings")}</span>
+        <span>{t(view)}</span>
       </div>
     {:else}
       <div class="brand">
@@ -83,13 +84,16 @@
       </div>
     {/if}
     <div class="actions">
-      {#if !showSettings && !reminder}
+      {#if view === "main" && !reminder}
+        <button class="icon" title={t("stats")} aria-label={t("stats")} onclick={() => (view = "stats")}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9" /></svg>
+        </button>
         <button
           class="icon"
           title={t("settings")}
           aria-label={t("settings")}
           disabled={!settings}
-          onclick={() => (showSettings = true)}
+          onclick={() => (view = "settings")}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="3" />
@@ -107,8 +111,10 @@
     </div>
   </header>
 
-  {#if showSettings && settings}
+  {#if view === "settings" && settings}
     <Settings view={settings} onsaved={applySettings} />
+  {:else if view === "stats"}
+    <Stats />
   {:else}
     <section class="hero">
       <div class="figure" class:big={status?.phase === "reminding"} aria-hidden="true">
@@ -161,7 +167,9 @@
           <span class="label">{t("nextBreakIn")}</span>
           <span class="value">{status ? fmtLeft(status.secs_left) : "–"}</span>
         {/if}
-        <span class="today">{t("doneToday", { n: status?.done_today ?? 0 })}</span>
+        <span class="today">
+          {t("doneToday", { n: status?.done_today ?? 0, goal: status?.daily_goal ?? 8 })}
+        </span>
       </section>
 
       <section class="why">
@@ -192,6 +200,7 @@
     --accent: #ef5a4c;
     --accent-2: #ff7a45;
     --accent-soft: #ffe9e1;
+    --chart: #ef5a4c;
     color-scheme: light dark;
   }
   @media (prefers-color-scheme: dark) {
@@ -204,6 +213,8 @@
       --accent: #ff6e5e;
       --accent-2: #ff8a55;
       --accent-soft: #3a2724;
+      /* The dark accent is too light for chart marks on the dark surface. */
+      --chart: #ee5f50;
     }
   }
 

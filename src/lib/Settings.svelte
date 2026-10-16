@@ -48,27 +48,35 @@
     <span>{t("interval")}</span>
     <span class="field">
       <input type="number" min="1" max="240" bind:value={s.interval_mins} onchange={save} />
-      {unit}
+      <span class="unit">{unit}</span>
     </span>
   </label>
   <label class="row">
     <span>{t("reps")}</span>
     <span class="field">
       <input type="number" min="1" max="100" bind:value={s.reps} onchange={save} />
+      <span class="unit"></span>
+    </span>
+  </label>
+  <label class="row">
+    <span>{t("dailyGoal")}</span>
+    <span class="field">
+      <input type="number" min="1" max="50" bind:value={s.daily_goal} onchange={save} />
+      <span class="unit">{t("breaks")}</span>
     </span>
   </label>
   <label class="row">
     <span>{t("idle")}</span>
     <span class="field">
       <input type="number" min="1" max="120" bind:value={s.idle_mins} onchange={save} />
-      {unit}
+      <span class="unit">{unit}</span>
     </span>
   </label>
   <label class="row">
     <span>{t("snoozeFor")}</span>
     <span class="field">
       <input type="number" min="1" max="60" bind:value={s.snooze_mins} onchange={save} />
-      {unit}
+      <span class="unit">{unit}</span>
     </span>
   </label>
 
@@ -149,6 +157,9 @@
     align-items: center;
     gap: 6px;
     color: var(--muted);
+  }
+  .unit {
+    min-width: 3.4em;
   }
   .group {
     border-top: 1px solid var(--line);

@@ -5,6 +5,7 @@ mod idle;
 mod popup;
 mod settings;
 mod sound;
+mod stats;
 mod timer;
 mod tray;
 
@@ -68,6 +69,7 @@ pub fn run() {
             breaks::resume_breaks,
             breaks::get_settings,
             breaks::set_settings,
+            breaks::get_stats,
             breaks::reset_stats,
         ])
         .build(tauri::generate_context!())

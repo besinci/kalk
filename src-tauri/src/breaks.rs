@@ -12,6 +12,7 @@ use tauri::{AppHandle, Emitter, Manager, Runtime};
 
 use crate::db::Db;
 use crate::settings::{self, Settings};
+use crate::stats::{self, Stats};
 use crate::timer::{Engine, Event, Outcome, Phase};
 use crate::{i18n, idle, popup, sound, tray};
 
@@ -33,6 +34,7 @@ pub struct Status {
     /// Local time, ISO 8601.
     paused_until: Option<String>,
     done_today: u32,
+    daily_goal: u32,
     reps: u32,
     snooze_secs: u64,
 }
@@ -134,6 +136,7 @@ fn on_tick<R: Runtime>(app: &AppHandle<R>) {
 fn status<R: Runtime>(app: &AppHandle<R>, now: NaiveDateTime) -> Status {
     let breaks = app.state::<Breaks>();
     let engine = breaks.engine.lock().unwrap();
+    let settings = breaks.settings.lock().unwrap();
     let done_today = breaks
         .db
         .as_ref()
@@ -146,7 +149,8 @@ fn status<R: Runtime>(app: &AppHandle<R>, now: NaiveDateTime) -> Status {
             .paused_until(now)
             .map(|t| t.format("%Y-%m-%dT%H:%M:%S").to_string()),
         done_today,
-        reps: breaks.settings.lock().unwrap().reps,
+        daily_goal: settings.daily_goal,
+        reps: settings.reps,
         snooze_secs: engine.config().snooze.as_secs(),
     }
 }
@@ -219,8 +223,9 @@ pub fn answer(app: AppHandle, outcome: Outcome) {
     if !breaks.engine.lock().unwrap().answer(outcome) {
         return;
     }
+    let reps = breaks.settings.lock().unwrap().reps;
     if let Some(db) = &breaks.db
-        && let Err(e) = db.lock().unwrap().log(now, outcome)
+        && let Err(e) = db.lock().unwrap().log(now, outcome, reps)
     {
         eprintln!("kalk: can't log break: {e}");
     }
@@ -254,6 +259,29 @@ pub fn set_settings(app: AppHandle, settings: Settings) -> Result<SettingsView, 
     apply_side_effects(&app, &settings);
     publish(&app, now());
     Ok(settings_view(settings))
+}
+
+#[tauri::command]
+pub fn get_stats(app: AppHandle) -> Result<Stats, String> {
+    let breaks = app.state::<Breaks>();
+    let settings = breaks.settings.lock().unwrap().clone();
+    let (done, total) = match &breaks.db {
+        Some(db) => {
+            let db = db.lock().unwrap();
+            let done = db.done_per_day().map_err(|e| e.to_string())?;
+            (done, db.total_squats().map_err(|e| e.to_string())?)
+        }
+        None => Default::default(),
+    };
+    let weekdays = settings.weekdays();
+    let active_days = settings.active_hours.then_some(weekdays.as_slice());
+    Ok(stats::build(
+        &done,
+        total,
+        now().date(),
+        settings.daily_goal,
+        active_days,
+    ))
 }
 
 #[tauri::command]

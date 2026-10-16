@@ -11,6 +11,7 @@ export interface Status {
   /** Local time, ISO 8601. */
   paused_until: string | null;
   done_today: number;
+  daily_goal: number;
   reps: number;
   snooze_secs: number;
 }
@@ -18,6 +19,7 @@ export interface Status {
 export interface Settings {
   interval_mins: number;
   reps: number;
+  daily_goal: number;
   idle_mins: number;
   snooze_mins: number;
   active_hours: boolean;
@@ -29,6 +31,15 @@ export interface Settings {
   launch_at_login: boolean;
   sound: boolean;
   language: "system" | Lang;
+}
+
+export interface Stats {
+  today: number;
+  goal: number;
+  streak: number;
+  /** Oldest first, ending today. `date` is "YYYY-MM-DD". */
+  week: { date: string; done: number }[];
+  total_squats: number;
 }
 
 export interface SettingsView {

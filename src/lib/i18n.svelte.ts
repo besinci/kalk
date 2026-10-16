@@ -12,7 +12,7 @@ const en = {
   resumeNow: "Resume now",
   offHours: "Outside active hours",
   off: "Off",
-  doneToday: "Today: {n} breaks done",
+  doneToday: "Today: {n} / {goal} breaks",
   whyTitle: "{reps} squats every {mins} minutes",
   whyBody: "Better for blood sugar than one 30‑minute walk.",
   readStudy: "Read the study →",
@@ -29,6 +29,17 @@ const en = {
 
   interval: "Break every",
   reps: "Squats per break",
+  dailyGoal: "Daily goal",
+  breaks: "breaks",
+
+  stats: "Stats",
+  today: "Today",
+  streak: "Streak",
+  streakDays: "{n} days",
+  totalSquats: "Total squats",
+  last7: "Last 7 days",
+  goal: "Goal {n}",
+  dayBreaks: "{day}: {n} breaks",
   idle: "Reset after idle for",
   snoozeFor: "Snooze for",
   activeHours: "Only during active hours",
@@ -58,7 +69,7 @@ const tr: Strings = {
   resumeNow: "Şimdi devam et",
   offHours: "Aktif saatlerin dışında",
   off: "Kapalı",
-  doneToday: "Bugün: {n} mola tamamlandı",
+  doneToday: "Bugün: {n} / {goal} mola",
   whyTitle: "Her {mins} dakikada {reps} squat",
   whyBody: "Kan şekeri için tek bir 30 dakikalık yürüyüşten daha iyi.",
   readStudy: "Çalışmayı oku →",
@@ -75,6 +86,17 @@ const tr: Strings = {
 
   interval: "Mola aralığı",
   reps: "Mola başına squat",
+  dailyGoal: "Günlük hedef",
+  breaks: "mola",
+
+  stats: "İstatistikler",
+  today: "Bugün",
+  streak: "Seri",
+  streakDays: "{n} gün",
+  totalSquats: "Toplam squat",
+  last7: "Son 7 gün",
+  goal: "Hedef {n}",
+  dayBreaks: "{day}: {n} mola",
   idle: "Boşta kalınca sıfırla",
   snoozeFor: "Erteleme süresi",
   activeHours: "Yalnızca aktif saatlerde",
@@ -122,6 +144,22 @@ export function fmtSpan(secs: number) {
 
 export function fmtClock(iso: string) {
   return new Date(iso).toLocaleTimeString(current, { hour: "2-digit", minute: "2-digit" });
+}
+
+/** "Fri 16 Oct" from "2026-10-16". */
+export function fmtDay(date: string) {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(current, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
+/** Short weekday name from "2026-10-16". */
+export function weekdayOf(date: string) {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(current, { weekday: "short" });
 }
 
 /** Short weekday name; 0 = Monday. */

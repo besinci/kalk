@@ -21,6 +21,8 @@ pub enum Language {
 pub struct Settings {
     pub interval_mins: u32,
     pub reps: u32,
+    /// Done breaks per day that count towards the streak.
+    pub daily_goal: u32,
     pub idle_mins: u32,
     pub snooze_mins: u32,
     pub active_hours: bool,
@@ -39,6 +41,7 @@ impl Default for Settings {
         Settings {
             interval_mins: 45,
             reps: 10,
+            daily_goal: 8,
             idle_mins: 10,
             snooze_mins: 5,
             active_hours: true,
@@ -63,6 +66,7 @@ impl Settings {
         let d = Settings::default();
         self.interval_mins = self.interval_mins.clamp(1, 240);
         self.reps = self.reps.clamp(1, 100);
+        self.daily_goal = self.daily_goal.clamp(1, 50);
         self.idle_mins = self.idle_mins.clamp(1, 120);
         self.snooze_mins = self.snooze_mins.clamp(1, 60);
         if parse_time(&self.start).is_none() {
@@ -92,11 +96,7 @@ impl Settings {
         let active_hours = (self.active_hours && !dev).then(|| ActiveHours {
             start: parse_time(&self.start).unwrap_or(NaiveTime::MIN),
             end: parse_time(&self.end).unwrap_or(NaiveTime::MIN),
-            days: self
-                .days
-                .iter()
-                .filter_map(|&d| Weekday::try_from(d).ok())
-                .collect(),
+            days: self.weekdays(),
         });
         Config {
             interval: mins(self.interval_mins),
@@ -105,6 +105,13 @@ impl Settings {
             tick: Duration::from_secs(if dev { 1 } else { 10 }),
             active_hours,
         }
+    }
+
+    pub fn weekdays(&self) -> Vec<Weekday> {
+        self.days
+            .iter()
+            .filter_map(|&d| Weekday::try_from(d).ok())
+            .collect()
     }
 
     /// "tr" or "en".
