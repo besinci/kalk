@@ -6,6 +6,7 @@ mod popup;
 mod settings;
 mod sound;
 mod stats;
+mod store;
 mod timer;
 mod tray;
 mod update;

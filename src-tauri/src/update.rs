@@ -26,7 +26,8 @@ pub struct UpdateInfo {
 
 pub fn start<R: Runtime>(app: &AppHandle<R>) {
     app.manage(Updates::default());
-    if cfg!(debug_assertions) {
+    // The Store updates its own copies.
+    if cfg!(debug_assertions) || crate::store::packaged() {
         return;
     }
     let app = app.clone();
