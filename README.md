@@ -11,6 +11,23 @@ to do **10 bodyweight squats after every 45 minutes** of active computer use.
 
 Windows and macOS. Everything stays on your machine — no accounts, no telemetry.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/info-dark.png">
+    <img src="docs/screenshots/info-light.png" width="250" alt="Kalk popup: next squat break in 23 min, today 5 of 8 breaks">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/reminder-dark.png">
+    <img src="docs/screenshots/reminder-light.png" width="250" alt="Reminder: time for 10 squats, with Done, Snooze and Skip">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/stats-dark.png">
+    <img src="docs/screenshots/stats-light.png" width="250" alt="Stats: today, streak, total squats and the last 7 days">
+  </picture>
+</p>
+
+**Website:** https://besinci.github.io/kalk/
+
 ## What it does
 
 - **Counts only real computer time.** The timer runs while you're using the

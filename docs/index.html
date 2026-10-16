@@ -7,7 +7,7 @@
   <meta name="description" content="A tiny tray app for Windows and macOS that reminds you to do 10 squats after every 45 minutes of computer use. Free, open source, no accounts.">
   <meta property="og:title" content="Kalk — 10 squats every 45 minutes">
   <meta property="og:description" content="A tiny tray app that gets you off your chair. Free and open source for Windows and macOS.">
-  <meta property="og:image" content="icon.png">
+  <meta property="og:image" content="https://besinci.github.io/kalk/icon.png">
   <link rel="icon" href="favicon.png">
   <style>
     :root {
@@ -79,6 +79,11 @@
     h2 { font-size: clamp(28px, 4vw, 38px); line-height: 1.15; letter-spacing: -0.01em; margin: 0 0 12px; }
     .sub { color: var(--muted); margin: 0 0 36px; max-width: 40em; }
 
+    .shots-band { background: linear-gradient(var(--bg), var(--accent-soft) 50%, var(--bg)); padding: 8px 0 40px; }
+    .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; justify-items: center; }
+    .shots figure { margin: 0; text-align: center; max-width: 300px; }
+    .shots img { width: 100%; height: auto; border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 24px 48px -24px rgba(60, 20, 10, 0.35); display: block; }
+    .shots figcaption { margin-top: 14px; font-weight: 600; font-size: 15px; }
     .study { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
     .compare { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
     .compare li { display: grid; grid-template-columns: 190px 1fr; gap: 14px; align-items: center; padding: 14px 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); font-size: 15px; color: var(--muted); }
@@ -117,6 +122,7 @@
       .stage { order: -1; }
       .figure { width: min(240px, 64vw); }
       .features, .steps { grid-template-columns: 1fr; }
+      .shots { grid-template-columns: 1fr; gap: 32px; }
       .compare li { grid-template-columns: 1fr; gap: 2px; }
       .privacy { flex-direction: column; padding: 24px; }
     }
@@ -158,6 +164,34 @@
         <div class="count"><span id="rep">0</span> / 10</div>
       </div>
     </header>
+  </div>
+
+  <div class="shots-band">
+    <div class="wrap">
+      <div class="shots">
+        <figure>
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="screenshots/info-dark.png">
+            <img src="screenshots/info-light.png" width="340" height="480" alt="Kalk popup: next squat break in 23 min, today 5 of 8 breaks" loading="lazy">
+          </picture>
+          <figcaption>Click the tray icon for your countdown</figcaption>
+        </figure>
+        <figure>
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="screenshots/reminder-dark.png">
+            <img src="screenshots/reminder-light.png" width="340" height="480" alt="Reminder: time for 10 squats, with Done, Snooze and Skip" loading="lazy">
+          </picture>
+          <figcaption>Squat along when it's time</figcaption>
+        </figure>
+        <figure>
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="screenshots/stats-dark.png">
+            <img src="screenshots/stats-light.png" width="340" height="480" alt="Stats: today, streak, total squats and the last 7 days" loading="lazy">
+          </picture>
+          <figcaption>Watch your streak grow</figcaption>
+        </figure>
+      </div>
+    </div>
   </div>
 
   <div class="wrap">
