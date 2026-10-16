@@ -6,6 +6,9 @@ const en = {
   close: "Close (Esc)",
   back: "Back",
   quit: "Quit Kalk",
+  updateAvailable: "Kalk {v} is available",
+  updateNow: "Update",
+  updating: "Updating…",
 
   nextBreakIn: "Next squat break in",
   pausedUntil: "Paused until",
@@ -63,6 +66,9 @@ const tr: Strings = {
   close: "Kapat (Esc)",
   back: "Geri",
   quit: "Kalk'tan çık",
+  updateAvailable: "Kalk {v} hazır",
+  updateNow: "Güncelle",
+  updating: "Güncelleniyor…",
 
   nextBreakIn: "Sonraki squat molasına",
   pausedUntil: "Duraklatma bitişi",

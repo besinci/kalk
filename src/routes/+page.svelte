@@ -14,6 +14,8 @@
   let settings = $state<SettingsView | null>(null);
   let view = $state<"main" | "settings" | "stats">("main");
   const reminder = $derived(status?.phase === "reminding" || status?.phase === "asking");
+  let update = $state<{ version: string } | null>(null);
+  let updating = $state(false);
   /** Reps the character has done so far in the open reminder. */
   let repsShown = $state(0);
 
@@ -25,6 +27,8 @@
   $effect(() => {
     invoke<SettingsView>("get_settings").then(applySettings);
     invoke<Status>("get_status").then((s) => (status = s));
+    invoke<{ version: string } | null>("get_update").then((u) => (update = u));
+    const unlistenUpdate = listen<{ version: string }>("update", (e) => (update = e.payload));
     const unlisten = listen<Status>("status", (e) => {
       if (e.payload.phase === "reminding" && status?.phase !== "reminding") {
         repsShown = 0;
@@ -34,6 +38,7 @@
     });
     return () => {
       unlisten.then((f) => f());
+      unlistenUpdate.then((f) => f());
     };
   });
 
@@ -43,6 +48,18 @@
     const { days, start, end } = settings.settings;
     return `${days.map(weekday).join(", ")} · ${start}–${end}`;
   });
+
+  async function installUpdate() {
+    updating = true;
+    try {
+      // Restarts the app on success, so this only returns on failure.
+      await invoke("install_update");
+    } catch (e) {
+      console.error(e);
+    }
+    updating = false;
+    update = null;
+  }
 
   function answer(outcome: Outcome) {
     invoke("answer", { outcome });
@@ -183,6 +200,15 @@
         <button class="link" onclick={() => openUrl(STUDY_URL)}>{t("readStudy")}</button>
       </section>
     {/if}
+  {/if}
+
+  {#if update && view === "main" && !reminder}
+    <div class="update">
+      <span>{t("updateAvailable", { v: update.version })}</span>
+      <button class="link" disabled={updating} onclick={installUpdate}>
+        {updating ? t("updating") : t("updateNow")}
+      </button>
+    </div>
   {/if}
 
   <footer>
@@ -418,6 +444,21 @@
   }
   .link:hover {
     text-decoration: underline;
+  }
+
+  .update {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    font-size: 12.5px;
+  }
+  .update + footer {
+    margin-top: 0;
   }
 
   footer {

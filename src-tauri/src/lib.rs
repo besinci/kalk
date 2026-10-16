@@ -8,6 +8,7 @@ mod sound;
 mod stats;
 mod timer;
 mod tray;
+mod update;
 
 use tauri::{Manager, RunEvent, WindowEvent};
 
@@ -30,6 +31,7 @@ pub fn run() {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
         ))
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(popup::PopupState::default())
         .setup(|app| {
             // Menu-bar only: no Dock icon, no app menu.
@@ -38,6 +40,7 @@ pub fn run() {
 
             tray::build(app.handle())?;
             breaks::start(app.handle());
+            update::start(app.handle());
 
             // Dev convenience: `KALK_SHOW=1 npm run tauri dev` opens the popup
             // immediately instead of waiting for a tray click.
@@ -71,6 +74,8 @@ pub fn run() {
             breaks::set_settings,
             breaks::get_stats,
             breaks::reset_stats,
+            update::get_update,
+            update::install_update,
         ])
         .build(tauri::generate_context!())
         .expect("error while building Kalk")
