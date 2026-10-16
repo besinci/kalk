@@ -1,6 +1,6 @@
 {
   "name": "kalk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Kalk \u2014 10 squats every 45 minutes. A tiny tray app for squat breaks.",
   "type": "module",
   "scripts": {

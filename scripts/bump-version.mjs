@@ -14,6 +14,8 @@ function update(path, from, to) {
 }
 
 update("package.json", /"version": "[^"]+"/, `"version": "${version}"`);
+// The root package's version, at the top and under packages[""].
+update("package-lock.json", /("name": "kalk",\s+"version": )"[^"]+"/g, `$1"${version}"`);
 update("src-tauri/tauri.conf.json", /"version": "[^"]+"/, `"version": "${version}"`);
 // The first `version =` in Cargo.toml is the package's own.
 update("src-tauri/Cargo.toml", /^version = "[^"]+"/m, `version = "${version}"`);
