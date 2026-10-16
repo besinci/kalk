@@ -59,8 +59,9 @@ Builds of the latest `main` are on the
 
 - **Windows:** the installer is unsigned, so SmartScreen will warn you —
   *More info → Run anyway*.
-- **macOS:** the build isn't notarized yet — right‑click the app → *Open* the
-  first time.
+- **macOS:** the build isn't notarized yet. Open Kalk once, then go to
+  *System Settings → Privacy & Security* and click *Open Anyway*. If macOS
+  says the app "is damaged", run `xattr -cr /Applications/Kalk.app`.
 
 ## Privacy
 
@@ -112,6 +113,29 @@ src-tauri/src/
   i18n.rs, sound.rs     tray strings, reminder chime
 assets/                 icon sources
 ```
+
+### Releasing
+
+```sh
+node scripts/bump-version.mjs 0.2.0     # package.json, Cargo.toml, tauri.conf.json
+(cd src-tauri && cargo check)           # updates Cargo.lock
+git commit -am "Release 0.2.0" && git tag v0.2.0 && git push origin main v0.2.0
+```
+
+The tag runs the Release workflow, which builds both platforms into a
+**draft** release with the updater files (`latest.json` and signatures).
+Review it and publish; installed copies offer the update within a few hours.
+
+Secrets the workflow uses:
+
+| Secret | What |
+|---|---|
+| `TAURI_SIGNING_PRIVATE_KEY` | updater signing key (`~/.tauri/kalk-updater.key`; keep a backup — losing it means existing installs can't verify new updates) |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | optional; the key has no password |
+| `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY` | Developer ID Application certificate (`.p12`, base64) for macOS signing |
+| `APPLE_API_ISSUER`, `APPLE_API_KEY`, `APPLE_API_KEY_P8` | App Store Connect API key for notarization |
+
+Without the Apple secrets the macOS build is unsigned.
 
 Icons: `python3 assets/make_icons.py assets && npx tauri icon assets/app-icon.png`
 then copy `assets/tray-*.png` into `src-tauri/icons/`.
