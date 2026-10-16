@@ -1,0 +1,64 @@
+mod popup;
+mod tray;
+
+use tauri::{Manager, RunEvent, WindowEvent};
+
+#[tauri::command]
+fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        // A second launch just opens the existing popup instead of adding a
+        // second tray icon.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            popup::show(app);
+        }))
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_positioner::init())
+        .manage(popup::PopupState::default())
+        .setup(|app| {
+            // Menu-bar only: no Dock icon, no app menu.
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+            tray::build(app.handle())?;
+
+            // Dev convenience: `KALK_SHOW=1 npm run tauri dev` opens the popup
+            // immediately instead of waiting for a tray click.
+            #[cfg(debug_assertions)]
+            if std::env::var_os("KALK_SHOW").is_some() {
+                popup::show(app.handle());
+            }
+            Ok(())
+        })
+        .on_window_event(|window, event| {
+            if window.label() != popup::LABEL {
+                return;
+            }
+            match event {
+                WindowEvent::Focused(false) => popup::on_blur(window.app_handle()),
+                // Alt+F4 / Cmd+W hide the popup; only "Quit" exits.
+                WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    popup::hide(window.app_handle());
+                }
+                _ => {}
+            }
+        })
+        .invoke_handler(tauri::generate_handler![popup::hide_popup, quit_app])
+        .build(tauri::generate_context!())
+        .expect("error while building Kalk")
+        .run(|_app, event| {
+            // Keep running in the tray when no window is visible; an explicit
+            // app.exit(code) carries a code and is allowed through.
+            if let RunEvent::ExitRequested {
+                api, code: None, ..
+            } = event
+            {
+                api.prevent_exit();
+            }
+        });
+}
