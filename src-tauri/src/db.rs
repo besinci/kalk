@@ -39,6 +39,11 @@ impl Db {
         Ok(())
     }
 
+    pub fn clear(&self) -> rusqlite::Result<()> {
+        self.0.execute("DELETE FROM breaks", [])?;
+        Ok(())
+    }
+
     pub fn done_on(&self, day: NaiveDate) -> rusqlite::Result<u32> {
         self.0.query_row(
             "SELECT count(*) FROM breaks WHERE outcome = 'done' AND substr(at, 1, 10) = ?1",
@@ -60,7 +65,8 @@ mod tests {
         db.log(at(day, 10), Outcome::Done).unwrap();
         db.log(at(day, 11), Outcome::Skipped).unwrap();
         db.log(at(day, 12), Outcome::Done).unwrap();
-        db.log(at(day.succ_opt().unwrap(), 10), Outcome::Done).unwrap();
+        db.log(at(day.succ_opt().unwrap(), 10), Outcome::Done)
+            .unwrap();
         assert_eq!(db.done_on(day).unwrap(), 2);
     }
 }

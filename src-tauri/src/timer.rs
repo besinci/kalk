@@ -39,41 +39,6 @@ pub struct Config {
     pub active_hours: Option<ActiveHours>,
 }
 
-impl Config {
-    pub fn release() -> Self {
-        let h = |h| NaiveTime::from_hms_opt(h, 0, 0).unwrap();
-        Config {
-            interval: Duration::from_secs(45 * 60),
-            idle_threshold: Duration::from_secs(10 * 60),
-            snooze: Duration::from_secs(5 * 60),
-            tick: Duration::from_secs(10),
-            active_hours: Some(ActiveHours {
-                start: h(9),
-                end: h(18),
-                days: vec![
-                    Weekday::Mon,
-                    Weekday::Tue,
-                    Weekday::Wed,
-                    Weekday::Thu,
-                    Weekday::Fri,
-                ],
-            }),
-        }
-    }
-
-    /// Seconds instead of minutes, and no active hours, so a full cycle can be
-    /// watched locally at any time of day.
-    pub fn dev() -> Self {
-        Config {
-            interval: Duration::from_secs(45),
-            idle_threshold: Duration::from_secs(30),
-            snooze: Duration::from_secs(15),
-            tick: Duration::from_secs(1),
-            active_hours: None,
-        }
-    }
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Phase {
@@ -122,7 +87,7 @@ enum Reminder {
 }
 
 pub struct Engine {
-    pub cfg: Config,
+    cfg: Config,
     active: Duration,
     last_tick: Option<NaiveDateTime>,
     reminder: Reminder,
@@ -138,6 +103,15 @@ impl Engine {
             reminder: Reminder::None,
             paused_until: None,
         }
+    }
+
+    pub fn config(&self) -> &Config {
+        &self.cfg
+    }
+
+    /// Applies new settings without losing the time counted so far.
+    pub fn set_config(&mut self, cfg: Config) {
+        self.cfg = cfg;
     }
 
     pub fn tick(&mut self, now: NaiveDateTime, idle: Duration) -> Option<Event> {
@@ -221,13 +195,17 @@ impl Engine {
     }
 
     fn in_active_hours(&self, now: NaiveDateTime) -> bool {
-        self.cfg.active_hours.as_ref().is_none_or(|h| h.contains(now))
+        self.cfg
+            .active_hours
+            .as_ref()
+            .is_none_or(|h| h.contains(now))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::settings::Settings;
     use chrono::NaiveDate;
 
     const MIN: Duration = Duration::from_secs(60);
@@ -241,11 +219,12 @@ mod tests {
             .unwrap()
     }
 
-    /// Release config ticking once a minute, which keeps the tests short.
+    /// Default release config ticking once a minute, which keeps the tests
+    /// short.
     fn engine() -> Engine {
         Engine::new(Config {
             tick: MIN,
-            ..Config::release()
+            ..Settings::default().timer_config(false)
         })
     }
 

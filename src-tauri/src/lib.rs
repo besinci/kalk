@@ -1,7 +1,10 @@
 mod breaks;
 mod db;
+mod i18n;
 mod idle;
 mod popup;
+mod settings;
+mod sound;
 mod timer;
 mod tray;
 
@@ -22,6 +25,10 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_positioner::init())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .manage(popup::PopupState::default())
         .setup(|app| {
             // Menu-bar only: no Dock icon, no app menu.
@@ -59,6 +66,9 @@ pub fn run() {
             breaks::get_status,
             breaks::answer,
             breaks::resume_breaks,
+            breaks::get_settings,
+            breaks::set_settings,
+            breaks::reset_stats,
         ])
         .build(tauri::generate_context!())
         .expect("error while building Kalk")

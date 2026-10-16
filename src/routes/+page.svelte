@@ -2,30 +2,33 @@
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
   import { openUrl } from "@tauri-apps/plugin-opener";
+  import Settings from "$lib/Settings.svelte";
   import Squatter from "$lib/Squatter.svelte";
+  import { fmtClock, fmtLeft, fmtSpan, setLang, t, weekday } from "$lib/i18n.svelte";
+  import type { Outcome, SettingsView, Status } from "$lib/types";
 
   const STUDY_URL = "https://doi.org/10.1111/sms.14628";
 
-  type Phase = "counting" | "paused" | "off_hours" | "reminding" | "asking";
-  type Outcome = "done" | "skipped" | "snoozed" | "missed";
-  interface Status {
-    phase: Phase;
-    secs_left: number;
-    paused_until: string | null;
-    done_today: number;
-    reps: number;
-    snooze_secs: number;
-  }
-
   let status = $state<Status | null>(null);
+  let settings = $state<SettingsView | null>(null);
+  let showSettings = $state(false);
   const reminder = $derived(status?.phase === "reminding" || status?.phase === "asking");
   /** Reps the character has done so far in the open reminder. */
   let repsShown = $state(0);
 
+  function applySettings(view: SettingsView) {
+    settings = view;
+    setLang(view.lang);
+  }
+
   $effect(() => {
+    invoke<SettingsView>("get_settings").then(applySettings);
     invoke<Status>("get_status").then((s) => (status = s));
     const unlisten = listen<Status>("status", (e) => {
-      if (e.payload.phase === "reminding" && status?.phase !== "reminding") repsShown = 0;
+      if (e.payload.phase === "reminding" && status?.phase !== "reminding") {
+        repsShown = 0;
+        showSettings = false;
+      }
       status = e.payload;
     });
     return () => {
@@ -33,18 +36,12 @@
     };
   });
 
-  /** "23 min", or "0:42" under a minute. */
-  function fmtLeft(secs: number) {
-    return secs >= 60 ? `${Math.ceil(secs / 60)} min` : `0:${String(secs).padStart(2, "0")}`;
-  }
-
-  function fmtSnooze(secs: number) {
-    return secs >= 60 ? `${Math.round(secs / 60)} min` : `${secs} s`;
-  }
-
-  function fmtClock(iso: string) {
-    return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  }
+  /** e.g. "Mon, Tue, Wed, Thu, Fri · 09:00–18:00" */
+  const activeHours = $derived.by(() => {
+    if (!settings) return "";
+    const { days, start, end } = settings.settings;
+    return `${days.map(weekday).join(", ")} · ${start}–${end}`;
+  });
 
   function answer(outcome: Outcome) {
     invoke("answer", { outcome });
@@ -59,7 +56,9 @@
   }
 
   function onKeydown(e: KeyboardEvent) {
-    if (e.key === "Escape" && !reminder) hide();
+    if (e.key !== "Escape" || reminder) return;
+    if (showSettings) showSettings = false;
+    else hide();
   }
 </script>
 
@@ -67,93 +66,119 @@
 
 <main>
   <header>
-    <div class="brand">
-      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="6" r="3" />
-        <path d="M4.5 19.5 12 12l7.5 7.5" />
-      </svg>
-      <span>Kalk</span>
-    </div>
-    <div class="actions">
-      <button class="icon" title="Settings (coming soon)" aria-label="Settings" disabled>
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="3" />
-          <path
-            d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"
-          />
+    {#if showSettings}
+      <div class="brand">
+        <button class="icon" title={t("back")} aria-label={t("back")} onclick={() => (showSettings = false)}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <span>{t("settings")}</span>
+      </div>
+    {:else}
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="6" r="3" />
+          <path d="M4.5 19.5 12 12l7.5 7.5" />
         </svg>
-      </button>
+        <span>Kalk</span>
+      </div>
+    {/if}
+    <div class="actions">
+      {#if !showSettings && !reminder}
+        <button
+          class="icon"
+          title={t("settings")}
+          aria-label={t("settings")}
+          disabled={!settings}
+          onclick={() => (showSettings = true)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"
+            />
+          </svg>
+        </button>
+      {/if}
       {#if !reminder}
-        <button class="icon" title="Close (Esc)" aria-label="Close" onclick={hide}>
+        <button class="icon" title={t("close")} aria-label={t("close")} onclick={hide}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
         </button>
       {/if}
     </div>
   </header>
 
-  <section class="hero">
-    <div class="figure" class:big={status?.phase === "reminding"} aria-hidden="true">
-      {#if status?.phase === "reminding"}
-        <!-- Squat along: the counter follows the character. -->
-        {#key status.phase}
-          <Squatter period={2.4} reps={status.reps} onrep={(n) => (repsShown = n)} />
-        {/key}
-      {:else}
-        <Squatter />
-      {/if}
-    </div>
-    {#if status?.phase === "reminding" && repsShown > 0}
-      <span class="reps" aria-live="polite">{repsShown} / {status.reps}</span>
-    {/if}
-  </section>
-
-  {#if status?.phase === "reminding"}
-    <section class="prompt">
-      <h1>Time for {status.reps} squats!</h1>
-      <p>Stand up, squat {status.reps} times, sit back down.</p>
-      <div class="buttons">
-        <button class="primary" onclick={() => answer("done")}>Done</button>
-        <button class="secondary" onclick={() => answer("snoozed")}>
-          Snooze {fmtSnooze(status.snooze_secs)}
-        </button>
-        <button class="secondary" onclick={() => answer("skipped")}>Skip</button>
-      </div>
-    </section>
-  {:else if status?.phase === "asking"}
-    <section class="prompt">
-      <h1>Welcome back!</h1>
-      <p>Did you do your {status.reps} squats?</p>
-      <div class="buttons">
-        <button class="primary" onclick={() => answer("done")}>Yes</button>
-        <button class="secondary" onclick={() => answer("missed")}>No</button>
-      </div>
-    </section>
+  {#if showSettings && settings}
+    <Settings view={settings} onsaved={applySettings} />
   {:else}
-    <section class="next">
-      {#if status?.phase === "paused" && status.paused_until}
-        <span class="label">Paused until</span>
-        <span class="value">{fmtClock(status.paused_until)}</span>
-        <button class="link" onclick={() => invoke("resume_breaks")}>Resume now</button>
-      {:else if status?.phase === "off_hours"}
-        <span class="label">Outside active hours</span>
-        <span class="value">Off</span>
-        <span class="today">Mon–Fri, 09:00–18:00</span>
-      {:else}
-        <span class="label">Next squat break in</span>
-        <span class="value">{status ? fmtLeft(status.secs_left) : "–"}</span>
+    <section class="hero">
+      <div class="figure" class:big={status?.phase === "reminding"} aria-hidden="true">
+        {#if status?.phase === "reminding"}
+          <!-- Squat along: the counter follows the character. -->
+          {#key status.phase}
+            <Squatter period={2.4} reps={status.reps} onrep={(n: number) => (repsShown = n)} />
+          {/key}
+        {:else}
+          <Squatter />
+        {/if}
+      </div>
+      {#if status?.phase === "reminding" && repsShown > 0}
+        <span class="reps" aria-live="polite">{repsShown} / {status.reps}</span>
       {/if}
-      <span class="today">Today: {status?.done_today ?? 0} breaks done</span>
     </section>
 
-    <section class="why">
-      <h2>10 squats every 45 minutes</h2>
-      <p>Better for blood sugar than one 30‑minute walk.</p>
-      <button class="link" onclick={() => openUrl(STUDY_URL)}>Read the study →</button>
-    </section>
+    {#if status?.phase === "reminding"}
+      <section class="prompt">
+        <h1>{t("remindTitle", { reps: status.reps })}</h1>
+        <p>{t("remindBody", { reps: status.reps })}</p>
+        <div class="buttons">
+          <button class="primary" onclick={() => answer("done")}>{t("done")}</button>
+          <button class="secondary" onclick={() => answer("snoozed")}>
+            {t("snooze", { d: fmtSpan(status.snooze_secs) })}
+          </button>
+          <button class="secondary" onclick={() => answer("skipped")}>{t("skip")}</button>
+        </div>
+      </section>
+    {:else if status?.phase === "asking"}
+      <section class="prompt">
+        <h1>{t("askTitle")}</h1>
+        <p>{t("askBody", { reps: status.reps })}</p>
+        <div class="buttons">
+          <button class="primary" onclick={() => answer("done")}>{t("yes")}</button>
+          <button class="secondary" onclick={() => answer("missed")}>{t("no")}</button>
+        </div>
+      </section>
+    {:else}
+      <section class="next">
+        {#if status?.phase === "paused" && status.paused_until}
+          <span class="label">{t("pausedUntil")}</span>
+          <span class="value">{fmtClock(status.paused_until)}</span>
+          <button class="link" onclick={() => invoke("resume_breaks")}>{t("resumeNow")}</button>
+        {:else if status?.phase === "off_hours"}
+          <span class="label">{t("offHours")}</span>
+          <span class="value">{t("off")}</span>
+          <span class="today">{activeHours}</span>
+        {:else}
+          <span class="label">{t("nextBreakIn")}</span>
+          <span class="value">{status ? fmtLeft(status.secs_left) : "–"}</span>
+        {/if}
+        <span class="today">{t("doneToday", { n: status?.done_today ?? 0 })}</span>
+      </section>
+
+      <section class="why">
+        <h2>
+          {t("whyTitle", {
+            reps: settings?.settings.reps ?? 10,
+            mins: settings?.settings.interval_mins ?? 45,
+          })}
+        </h2>
+        <p>{t("whyBody")}</p>
+        <button class="link" onclick={() => openUrl(STUDY_URL)}>{t("readStudy")}</button>
+      </section>
+    {/if}
   {/if}
 
   <footer>
-    <button class="quiet" onclick={quit}>Quit Kalk</button>
+    <button class="quiet" onclick={quit}>{t("quit")}</button>
   </footer>
 </main>
 

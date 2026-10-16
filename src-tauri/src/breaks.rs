@@ -1,6 +1,7 @@
-//! Runs the timer in the background and wires it to the popup, the tray and
-//! the log. The popup gets a `status` event on every tick.
+//! Runs the timer in the background and wires it to the popup, the tray, the
+//! settings and the log. The popup gets a `status` event on every tick.
 
+use std::path::PathBuf;
 use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
@@ -10,15 +11,17 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, Runtime};
 
 use crate::db::Db;
-use crate::timer::{Config, Engine, Event, Outcome, Phase};
-use crate::{idle, popup, tray};
+use crate::settings::{self, Settings};
+use crate::timer::{Engine, Event, Outcome, Phase};
+use crate::{i18n, idle, popup, sound, tray};
 
 pub const STATUS_EVENT: &str = "status";
-/// TODO(milestone 5): make reps a setting.
-const REPS: u32 = 10;
+const DEV: bool = cfg!(debug_assertions);
 
 pub struct Breaks {
     engine: Mutex<Engine>,
+    settings: Mutex<Settings>,
+    settings_path: Option<PathBuf>,
     db: Option<Mutex<Db>>,
     tooltip: Mutex<String>,
 }
@@ -34,6 +37,15 @@ pub struct Status {
     snooze_secs: u64,
 }
 
+#[derive(Clone, Serialize)]
+pub struct SettingsView {
+    settings: Settings,
+    /// The language in effect, with "system" resolved: "en" or "tr".
+    lang: &'static str,
+    /// Dev build: minutes run as seconds and active hours are ignored.
+    dev: bool,
+}
+
 #[derive(Clone, Copy)]
 pub enum Pause {
     Hour,
@@ -45,47 +57,75 @@ fn now() -> NaiveDateTime {
 }
 
 pub fn start<R: Runtime>(app: &AppHandle<R>) {
-    let cfg = if cfg!(debug_assertions) {
-        Config::dev()
-    } else {
-        Config::release()
-    };
-    let tick = cfg.tick;
+    let dir = app.path().app_data_dir().ok().filter(|dir| {
+        std::fs::create_dir_all(dir)
+            .inspect_err(|e| eprintln!("kalk: can't create {}: {e}", dir.display()))
+            .is_ok()
+    });
+    let settings_path = dir.as_deref().map(settings::path);
+    let settings = settings_path
+        .as_deref()
+        .map(settings::load)
+        .unwrap_or_default();
+    // Without a log the timer still works; only "done today" stays at 0.
+    let db = dir.as_deref().and_then(|dir| {
+        Db::open(&dir.join("kalk.db"))
+            .inspect_err(|e| eprintln!("kalk: can't open log: {e}"))
+            .ok()
+    });
+
+    let cfg = settings.timer_config(DEV);
     app.manage(Breaks {
         engine: Mutex::new(Engine::new(cfg)),
-        db: open_db(app).map(Mutex::new),
+        settings: Mutex::new(settings.clone()),
+        settings_path,
+        db: db.map(Mutex::new),
         tooltip: Mutex::default(),
     });
+    apply_side_effects(app, &settings);
 
     let app = app.clone();
     thread::spawn(move || {
         loop {
             on_tick(&app);
+            // Re-read each time so a settings change takes effect.
+            let tick = app.state::<Breaks>().engine.lock().unwrap().config().tick;
             thread::sleep(tick);
         }
     });
 }
 
-fn open_db<R: Runtime>(app: &AppHandle<R>) -> Option<Db> {
-    let dir = app.path().app_data_dir().ok()?;
-    let opened = std::fs::create_dir_all(&dir)
-        .map_err(|e| e.to_string())
-        .and_then(|()| Db::open(&dir.join("kalk.db")).map_err(|e| e.to_string()));
-    // Without a log the timer still works; only "done today" stays at 0.
-    opened.inspect_err(|e| eprintln!("kalk: can't open log: {e}")).ok()
+/// Applies the parts of the settings that live outside the timer.
+fn apply_side_effects<R: Runtime>(app: &AppHandle<R>, settings: &Settings) {
+    tray::set_language(app, settings.lang());
+    // A dev build would register the debug binary to launch at login.
+    if !DEV {
+        use tauri_plugin_autostart::ManagerExt;
+        let autolaunch = app.autolaunch();
+        let result = if settings.launch_at_login {
+            autolaunch.enable()
+        } else {
+            autolaunch.disable()
+        };
+        if let Err(e) = result {
+            eprintln!("kalk: can't update launch at login: {e}");
+        }
+    }
 }
 
 fn on_tick<R: Runtime>(app: &AppHandle<R>) {
     let now = now();
-    let event = app
-        .state::<Breaks>()
-        .engine
-        .lock()
-        .unwrap()
-        .tick(now, idle::idle_time());
+    let breaks = app.state::<Breaks>();
+    let event = breaks.engine.lock().unwrap().tick(now, idle::idle_time());
     match event {
-        // Ask also re-shows the reminder in case it was dismissed somehow.
-        Some(Event::Remind | Event::Ask) => popup::show_reminder(app),
+        Some(Event::Remind) => {
+            if breaks.settings.lock().unwrap().sound {
+                sound::chime();
+            }
+            popup::show_reminder(app);
+        }
+        // Also re-shows the reminder in case it was dismissed somehow.
+        Some(Event::Ask) => popup::show_reminder(app),
         None => {}
     }
     publish(app, now);
@@ -106,8 +146,8 @@ fn status<R: Runtime>(app: &AppHandle<R>, now: NaiveDateTime) -> Status {
             .paused_until(now)
             .map(|t| t.format("%Y-%m-%dT%H:%M:%S").to_string()),
         done_today,
-        reps: REPS,
-        snooze_secs: engine.cfg.snooze.as_secs(),
+        reps: breaks.settings.lock().unwrap().reps,
+        snooze_secs: engine.config().snooze.as_secs(),
     }
 }
 
@@ -116,8 +156,8 @@ fn publish<R: Runtime>(app: &AppHandle<R>, now: NaiveDateTime) {
     let _ = app.emit(STATUS_EVENT, &status);
     tray::sync_menu(app, status.phase == Phase::Paused);
 
-    let tooltip = tooltip(&status);
     let breaks = app.state::<Breaks>();
+    let tooltip = tooltip(breaks.settings.lock().unwrap().lang(), &status);
     let mut last = breaks.tooltip.lock().unwrap();
     if *last != tooltip {
         tray::set_tooltip(app, &tooltip);
@@ -125,25 +165,14 @@ fn publish<R: Runtime>(app: &AppHandle<R>, now: NaiveDateTime) {
     }
 }
 
-fn tooltip(s: &Status) -> String {
-    // TODO(milestone 5): localise.
+fn tooltip(lang: &str, s: &Status) -> String {
     match s.phase {
-        Phase::Counting => format!("Kalk — next break in {}", fmt_duration(s.secs_left)),
-        Phase::Paused => match &s.paused_until {
-            Some(until) => format!("Kalk — paused until {}", &until[11..16]),
-            None => "Kalk — paused".into(),
-        },
-        Phase::OffHours => "Kalk — outside active hours".into(),
-        Phase::Reminding | Phase::Asking => format!("Kalk — time for {} squats!", s.reps),
-    }
-}
-
-/// "23 min", or "0:42" under a minute.
-fn fmt_duration(secs: u64) -> String {
-    if secs >= 60 {
-        format!("{} min", secs.div_ceil(60))
-    } else {
-        format!("0:{secs:02}")
+        Phase::Counting => i18n::next_break_in(lang, &i18n::duration(lang, s.secs_left)),
+        Phase::Paused => {
+            i18n::paused_until(lang, s.paused_until.as_deref().map_or("", |t| &t[11..16]))
+        }
+        Phase::OffHours => i18n::off_hours(lang),
+        Phase::Reminding | Phase::Asking => i18n::time_for_squats(lang, s.reps),
     }
 }
 
@@ -151,15 +180,31 @@ pub fn pause<R: Runtime>(app: &AppHandle<R>, pause: Pause) {
     let now = now();
     let until = match pause {
         Pause::Hour => now + Duration::from_secs(60 * 60),
-        Pause::Today => now.date().succ_opt().unwrap_or(now.date()).and_time(NaiveTime::MIN),
+        Pause::Today => now
+            .date()
+            .succ_opt()
+            .unwrap_or(now.date())
+            .and_time(NaiveTime::MIN),
     };
-    app.state::<Breaks>().engine.lock().unwrap().pause_until(until);
+    app.state::<Breaks>()
+        .engine
+        .lock()
+        .unwrap()
+        .pause_until(until);
     publish(app, now);
 }
 
 pub fn resume<R: Runtime>(app: &AppHandle<R>) {
     app.state::<Breaks>().engine.lock().unwrap().resume();
     publish(app, now());
+}
+
+fn settings_view(settings: Settings) -> SettingsView {
+    SettingsView {
+        lang: settings.lang(),
+        settings,
+        dev: DEV,
+    }
 }
 
 #[tauri::command]
@@ -186,4 +231,36 @@ pub fn answer(app: AppHandle, outcome: Outcome) {
 #[tauri::command]
 pub fn resume_breaks(app: AppHandle) {
     resume(&app);
+}
+
+#[tauri::command]
+pub fn get_settings(app: AppHandle) -> SettingsView {
+    settings_view(app.state::<Breaks>().settings.lock().unwrap().clone())
+}
+
+#[tauri::command]
+pub fn set_settings(app: AppHandle, settings: Settings) -> Result<SettingsView, String> {
+    let settings = settings.sanitized();
+    let breaks = app.state::<Breaks>();
+    if let Some(path) = &breaks.settings_path {
+        settings::save(path, &settings).map_err(|e| e.to_string())?;
+    }
+    breaks
+        .engine
+        .lock()
+        .unwrap()
+        .set_config(settings.timer_config(DEV));
+    *breaks.settings.lock().unwrap() = settings.clone();
+    apply_side_effects(&app, &settings);
+    publish(&app, now());
+    Ok(settings_view(settings))
+}
+
+#[tauri::command]
+pub fn reset_stats(app: AppHandle) -> Result<(), String> {
+    if let Some(db) = &app.state::<Breaks>().db {
+        db.lock().unwrap().clear().map_err(|e| e.to_string())?;
+    }
+    publish(&app, now());
+    Ok(())
 }

@@ -6,15 +6,18 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::{AppHandle, Manager, Runtime};
 
 use crate::breaks::{self, Pause};
+use crate::i18n::{self, Key};
 use crate::popup;
 
 pub const ID: &str = "kalk";
 
-/// Menu items whose enabled state follows the pause state.
-struct PauseItems<R: Runtime> {
+/// Menu items that get relabelled or enabled after the menu is built.
+struct Items<R: Runtime> {
+    open: MenuItem<R>,
     hour: MenuItem<R>,
     today: MenuItem<R>,
     resume: MenuItem<R>,
+    quit: MenuItem<R>,
 }
 
 fn icon() -> tauri::Result<Image<'static>> {
@@ -28,7 +31,7 @@ fn icon() -> tauri::Result<Image<'static>> {
 }
 
 pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
-    // TODO(milestone 5): localise labels.
+    // Labels are set by `set_language` once settings are loaded.
     let open = MenuItem::with_id(app, "open", "Open Kalk", true, None::<&str>)?;
     let hour = MenuItem::with_id(app, "pause_hour", "Pause for 1 hour", true, None::<&str>)?;
     let today = MenuItem::with_id(app, "pause_today", "Pause for today", true, None::<&str>)?;
@@ -46,10 +49,12 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
             &quit,
         ],
     )?;
-    app.manage(PauseItems {
+    app.manage(Items {
+        open,
         hour,
         today,
         resume,
+        quit,
     });
 
     TrayIconBuilder::with_id(ID)
@@ -86,7 +91,7 @@ pub fn build<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
 }
 
 pub fn sync_menu<R: Runtime>(app: &AppHandle<R>, paused: bool) {
-    let Some(items) = app.try_state::<PauseItems<R>>() else {
+    let Some(items) = app.try_state::<Items<R>>() else {
         return;
     };
     let _ = items.hour.set_enabled(!paused);
@@ -97,5 +102,20 @@ pub fn sync_menu<R: Runtime>(app: &AppHandle<R>, paused: bool) {
 pub fn set_tooltip<R: Runtime>(app: &AppHandle<R>, text: &str) {
     if let Some(tray) = app.tray_by_id(ID) {
         let _ = tray.set_tooltip(Some(text));
+    }
+}
+
+pub fn set_language<R: Runtime>(app: &AppHandle<R>, lang: &str) {
+    let Some(items) = app.try_state::<Items<R>>() else {
+        return;
+    };
+    for (item, key) in [
+        (&items.open, Key::Open),
+        (&items.hour, Key::PauseHour),
+        (&items.today, Key::PauseToday),
+        (&items.resume, Key::Resume),
+        (&items.quit, Key::Quit),
+    ] {
+        let _ = item.set_text(i18n::t(lang, key));
     }
 }
