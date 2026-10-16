@@ -1,13 +1,48 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
+  import { listen } from "@tauri-apps/api/event";
   import { openUrl } from "@tauri-apps/plugin-opener";
 
   const STUDY_URL = "https://doi.org/10.1111/sms.14628";
 
-  // Placeholders until the timer engine (milestone 2) and tracking
-  // (milestone 3) feed real values.
-  let minutesLeft = $state(45);
-  let doneToday = $state(0);
+  type Phase = "counting" | "paused" | "off_hours" | "reminding" | "asking";
+  type Outcome = "done" | "skipped" | "snoozed" | "missed";
+  interface Status {
+    phase: Phase;
+    secs_left: number;
+    paused_until: string | null;
+    done_today: number;
+    reps: number;
+    snooze_secs: number;
+  }
+
+  let status = $state<Status | null>(null);
+  const reminder = $derived(status?.phase === "reminding" || status?.phase === "asking");
+
+  $effect(() => {
+    invoke<Status>("get_status").then((s) => (status = s));
+    const unlisten = listen<Status>("status", (e) => (status = e.payload));
+    return () => {
+      unlisten.then((f) => f());
+    };
+  });
+
+  /** "23 min", or "0:42" under a minute. */
+  function fmtLeft(secs: number) {
+    return secs >= 60 ? `${Math.ceil(secs / 60)} min` : `0:${String(secs).padStart(2, "0")}`;
+  }
+
+  function fmtSnooze(secs: number) {
+    return secs >= 60 ? `${Math.round(secs / 60)} min` : `${secs} s`;
+  }
+
+  function fmtClock(iso: string) {
+    return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function answer(outcome: Outcome) {
+    invoke("answer", { outcome });
+  }
 
   function hide() {
     invoke("hide_popup");
@@ -18,7 +53,7 @@
   }
 
   function onKeydown(e: KeyboardEvent) {
-    if (e.key === "Escape") hide();
+    if (e.key === "Escape" && !reminder) hide();
   }
 </script>
 
@@ -42,9 +77,11 @@
           />
         </svg>
       </button>
-      <button class="icon" title="Close (Esc)" aria-label="Close" onclick={hide}>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
-      </button>
+      {#if !reminder}
+        <button class="icon" title="Close (Esc)" aria-label="Close" onclick={hide}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+      {/if}
     </div>
   </header>
 
@@ -58,20 +95,50 @@
     </div>
   </section>
 
-  <section class="next">
-    <span class="label">Next squat break in</span>
-    <span class="value">{minutesLeft} min</span>
-    <span class="today">Today: {doneToday} breaks done</span>
-  </section>
+  {#if status?.phase === "reminding"}
+    <section class="prompt">
+      <h1>Time for {status.reps} squats!</h1>
+      <p>Stand up, squat {status.reps} times, sit back down.</p>
+      <div class="buttons">
+        <button class="primary" onclick={() => answer("done")}>Done</button>
+        <button class="secondary" onclick={() => answer("snoozed")}>
+          Snooze {fmtSnooze(status.snooze_secs)}
+        </button>
+        <button class="secondary" onclick={() => answer("skipped")}>Skip</button>
+      </div>
+    </section>
+  {:else if status?.phase === "asking"}
+    <section class="prompt">
+      <h1>Welcome back!</h1>
+      <p>Did you do your {status.reps} squats?</p>
+      <div class="buttons">
+        <button class="primary" onclick={() => answer("done")}>Yes</button>
+        <button class="secondary" onclick={() => answer("missed")}>No</button>
+      </div>
+    </section>
+  {:else}
+    <section class="next">
+      {#if status?.phase === "paused" && status.paused_until}
+        <span class="label">Paused until</span>
+        <span class="value">{fmtClock(status.paused_until)}</span>
+        <button class="link" onclick={() => invoke("resume_breaks")}>Resume now</button>
+      {:else if status?.phase === "off_hours"}
+        <span class="label">Outside active hours</span>
+        <span class="value">Off</span>
+        <span class="today">Mon–Fri, 09:00–18:00</span>
+      {:else}
+        <span class="label">Next squat break in</span>
+        <span class="value">{status ? fmtLeft(status.secs_left) : "–"}</span>
+      {/if}
+      <span class="today">Today: {status?.done_today ?? 0} breaks done</span>
+    </section>
 
-  <section class="why">
-    <h2>10 squats every 45 minutes</h2>
-    <p>
-      In a 2024 study, breaking up 8.5 hours of sitting with 10 squats (or a 3‑minute walk)
-      every 45 minutes lowered blood sugar more than one 30‑minute walk.
-    </p>
-    <button class="link" onclick={() => openUrl(STUDY_URL)}>Read the study →</button>
-  </section>
+    <section class="why">
+      <h2>10 squats every 45 minutes</h2>
+      <p>Better for blood sugar than one 30‑minute walk.</p>
+      <button class="link" onclick={() => openUrl(STUDY_URL)}>Read the study →</button>
+    </section>
+  {/if}
 
   <footer>
     <button class="quiet" onclick={quit}>Quit Kalk</button>
@@ -250,6 +317,44 @@
     font-variant-numeric: tabular-nums;
     color: var(--accent);
     line-height: 1.2;
+  }
+
+  .prompt {
+    text-align: center;
+  }
+  .prompt h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    color: var(--accent);
+  }
+  .prompt p {
+    margin: 0 0 14px;
+    color: var(--muted);
+  }
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .primary,
+  .secondary {
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .primary {
+    background: linear-gradient(var(--accent-2), var(--accent));
+    color: #fff;
+  }
+  .primary:hover {
+    filter: brightness(1.05);
+  }
+  .secondary {
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .secondary:hover {
+    background: var(--accent-soft);
   }
 
   .why h2 {
