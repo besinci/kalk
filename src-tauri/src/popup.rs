@@ -48,21 +48,6 @@ pub fn mark_tray_located<R: Runtime>(app: &AppHandle<R>) {
 /// (e.g. opened from a second launch) use the top-right (macOS) or
 /// bottom-right (Windows) corner of the screen's work area.
 fn place<R: Runtime>(w: &WebviewWindow<R>, app: &AppHandle<R>) -> tauri::Result<()> {
-    if app
-        .state::<PopupState>()
-        .tray_located
-        .load(Ordering::Relaxed)
-    {
-        // macOS: menu bar is at the top, popup hangs below the icon.
-        // Windows: taskbar is usually at the bottom, popup sits above the icon.
-        let position = if cfg!(target_os = "macos") {
-            Position::TrayCenter
-        } else {
-            Position::TrayBottomCenter
-        };
-        return w.move_window(position);
-    }
-
     let Some(monitor) = w.current_monitor()?.or(w.primary_monitor()?) else {
         return Ok(());
     };
@@ -75,12 +60,31 @@ fn place<R: Runtime>(w: &WebviewWindow<R>, app: &AppHandle<R>) -> tauri::Result<
     let (ax, ay) = (area.position.x, area.position.y);
     let (aw, ah) = (area.size.width as i32, area.size.height as i32);
 
-    let x = ax + aw - size.width - margin;
-    let y = if cfg!(target_os = "macos") {
-        ay + margin
+    let tray_located = app
+        .state::<PopupState>()
+        .tray_located
+        .load(Ordering::Relaxed);
+    let (x, y) = if tray_located {
+        // TrayCenter sits above the icon, or below it when there's no room
+        // above (macOS menu bar). TrayBottomCenter puts the popup's top edge at
+        // the icon's top edge, i.e. inside the Windows taskbar and off screen.
+        w.move_window(Position::TrayCenter)?;
+        let pos = w.outer_position()?;
+        (pos.x, pos.y)
     } else {
-        ay + ah - size.height - margin
+        let x = ax + aw - size.width - margin;
+        let y = if cfg!(target_os = "macos") {
+            ay + margin
+        } else {
+            ay + ah - size.height - margin
+        };
+        (x, y)
     };
+
+    // Keep the whole popup inside the work area (clear of the taskbar / menu
+    // bar and the screen edges, e.g. for a tray icon in the far corner).
+    let x = x.clamp(ax, (ax + aw - size.width).max(ax));
+    let y = y.clamp(ay, (ay + ah - size.height).max(ay));
     w.set_position(PhysicalPosition::new(x, y))
 }
 
