@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kalk — Privacy policy</title>
+  <meta name="description" content="Kalk collects no personal data. Settings and your break log stay on your computer.">
+  <link rel="icon" href="favicon.png">
+  <style>
+    :root {
+      --bg: #fffaf7;
+      --surface: #ffffff;
+      --text: #2a1f1d;
+      --muted: #6f5d58;
+      --line: #f0e3dd;
+      --accent: #e5503f;
+      --accent-soft: #ffe9e1;
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1716;
+        --surface: #262020;
+        --text: #f5ece9;
+        --muted: #b3a19b;
+        --line: #3a302e;
+        --accent: #ff6e5e;
+        --accent-soft: #3a2724;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; color: var(--text); text-decoration: none; }
+    .brand img { width: 34px; height: 34px; border-radius: 9px; }
+    .lang { font: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+    .lang:hover { color: var(--text); background: var(--accent-soft); }
+
+    h1 { font-size: clamp(32px, 5vw, 44px); line-height: 1.1; letter-spacing: -0.02em; margin: 32px 0 8px; }
+    .updated { color: var(--muted); font-size: 15px; margin: 0 0 32px; }
+    .summary { background: var(--accent-soft); border-radius: 16px; padding: 20px 24px; margin: 0 0 32px; font-size: 18px; }
+    h2 { font-size: 21px; margin: 36px 0 8px; }
+    p, li { color: var(--muted); }
+    strong, code { color: var(--text); }
+    code { font: 15px ui-monospace, "Cascadia Code", Consolas, monospace; overflow-wrap: anywhere; }
+    ul { padding-left: 22px; }
+    li + li { margin-top: 6px; }
+
+    footer { margin-top: 56px; padding: 32px 0 48px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="./"><img src="icon.png" alt="" width="34" height="34">Kalk</a>
+      <button class="lang" id="lang" type="button" aria-label="Türkçe" title="Türkçe">TR</button>
+    </nav>
+
+    <main>
+      <h1 data-tr="Gizlilik politikası">Privacy policy</h1>
+      <p class="updated" data-tr="Son güncelleme: 17 Ekim 2026">Last updated: October 17, 2026</p>
+
+      <p class="summary" data-tr="&lt;strong&gt;Kalk hiçbir kişisel veri toplamaz.&lt;/strong&gt; Hesap yok, analiz yok, reklam yok. Ayarların ve mola kaydın bilgisayarından hiç çıkmaz.">
+        <strong>Kalk collects no personal data.</strong> No account, no analytics, no ads.
+        Your settings and break log never leave your computer.
+      </p>
+
+      <h2 data-tr="Bilgisayarında ne saklanır">What is stored on your computer</h2>
+      <ul>
+        <li data-tr="&lt;strong&gt;Ayarlar&lt;/strong&gt; (aralık, tekrar sayısı, aktif saatler, dil vb.) &lt;code&gt;settings.json&lt;/code&gt; dosyasında."><strong>Settings</strong> (interval, reps, active hours, language and so on) in <code>settings.json</code>.</li>
+        <li data-tr="&lt;strong&gt;Mola kaydı&lt;/strong&gt; &lt;code&gt;kalk.db&lt;/code&gt; dosyasında: her hatırlatmanın saati, sonucu (yapıldı, atlandı, ertelendi ya da kaçırıldı) ve tekrar sayısı. İstatistikler ve seri bundan hesaplanır."><strong>Break log</strong> in <code>kalk.db</code>: the time of each reminder, its outcome (done, skipped, snoozed or missed) and the number of reps. Stats and your streak are calculated from it.</li>
+      </ul>
+      <p data-tr="İkisi de Kalk&#x27;ın uygulama veri klasöründe durur. Microsoft Store sürümünü kaldırınca bu klasör de silinir. Bu dosyaları kimseyle paylaşmayız, çünkü onlara erişimimiz yok.">Both live in Kalk's app data folder. Uninstalling the Microsoft Store version removes them too. We don't share these files with anyone, because we never have access to them.</p>
+
+      <h2 data-tr="Klavye ve fare">Keyboard and mouse</h2>
+      <p data-tr="Kalk, yalnızca gerçekten bilgisayar başındayken süre saymak için işletim sistemine son girdinin &lt;strong&gt;ne kadar zaman önce&lt;/strong&gt; olduğunu sorar. Ne yazdığını, nereye tıkladığını ya da ekranında ne olduğunu okumaz ve kaydetmez.">To count only the time you're actually at the computer, Kalk asks the operating system <strong>how long ago</strong> the last input happened. It never reads or records what you type, where you click or what is on your screen.</p>
+
+      <h2 data-tr="İnternet bağlantısı">Network access</h2>
+      <p data-tr="&lt;strong&gt;Microsoft Store&lt;/strong&gt; sürümü internete hiç bağlanmaz; güncellemeleri Store yapar.">The <strong>Microsoft Store</strong> version makes no network connections at all; the Store handles updates.</p>
+      <p data-tr="GitHub&#x27;dan indirilen sürüm, yeni bir sürüm olup olmadığını görmek için birkaç saatte bir GitHub Releases&#x27;tan küçük bir dosya (&lt;code&gt;latest.json&lt;/code&gt;) indirir. Bu istek senin hakkında hiçbir veri göndermez; GitHub&#x27;ın her web isteğinde gördüğü bilgiler (IP adresi gibi) için &lt;a href=&quot;https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement&quot;&gt;GitHub&#x27;ın gizlilik bildirimi&lt;/a&gt; geçerlidir.">The version downloaded from GitHub fetches a small file (<code>latest.json</code>) from GitHub Releases every few hours to see whether a new version is out. The request sends no data about you; what GitHub sees with any web request (such as your IP address) is covered by <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub's privacy statement</a>.</p>
+
+      <h2 data-tr="Çocuklar">Children</h2>
+      <p data-tr="Kalk kimseden veri toplamadığı için çocuklardan da veri toplamaz.">Kalk collects no data from anyone, children included.</p>
+
+      <h2 data-tr="Değişiklikler">Changes</h2>
+      <p data-tr="Bu politika değişirse güncel hâli bu sayfada, yeni bir tarihle yayınlanır. Kaynak kod açık olduğu için Kalk&#x27;ın ne yaptığını &lt;a href=&quot;https://github.com/besinci/kalk&quot;&gt;GitHub&#x27;da&lt;/a&gt; kendin de inceleyebilirsin.">If this policy changes, the new version is published on this page with a new date. Kalk is open source, so you can check what it does yourself <a href="https://github.com/besinci/kalk">on GitHub</a>.</p>
+
+      <h2 data-tr="İletişim">Contact</h2>
+      <p data-tr="Sorular için &lt;a href=&quot;https://github.com/besinci/kalk/issues&quot;&gt;GitHub&#x27;da bir issue aç&lt;/a&gt;.">Questions? <a href="https://github.com/besinci/kalk/issues">Open an issue on GitHub</a>.</p>
+    </main>
+
+    <footer>
+      <a href="./" data-tr="← Kalk ana sayfası">← Kalk home</a>
+    </footer>
+  </div>
+
+  <script>
+    // Same language switch as index.html: English in the markup, Turkish in
+    // data-tr, ?lang=tr|en > saved choice > browser language.
+    (function () {
+      const META = {
+        en: { title: document.title, description: document.querySelector('meta[name="description"]').content },
+        tr: { title: "Kalk — Gizlilik politikası", description: "Kalk hiçbir kişisel veri toplamaz. Ayarlar ve mola kaydın bilgisayarında kalır." },
+      };
+      const button = document.getElementById("lang");
+
+      function stored() {
+        try { return localStorage.getItem("kalk-lang"); } catch { return null; }
+      }
+      function store(lang) {
+        try { localStorage.setItem("kalk-lang", lang); } catch {}
+      }
+      function initial() {
+        const param = new URLSearchParams(location.search).get("lang");
+        if (param === "tr" || param === "en") return param;
+        const saved = stored();
+        if (saved === "tr" || saved === "en") return saved;
+        const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+        return langs.some((l) => /^tr(-|$)/i.test(l || "")) ? "tr" : "en";
+      }
+
+      let current = "en";
+      function apply(lang) {
+        current = lang;
+        document.documentElement.lang = lang;
+        document.title = META[lang].title;
+        document.querySelector('meta[name="description"]').content = META[lang].description;
+        document.querySelectorAll("[data-tr]").forEach((el) => {
+          if (el.dataset.trEn === undefined) el.dataset.trEn = el.innerHTML;
+          el.innerHTML = lang === "tr" ? el.dataset.tr : el.dataset.trEn;
+        });
+        const other = lang === "tr" ? "en" : "tr";
+        button.textContent = other.toUpperCase();
+        button.title = other === "tr" ? "Türkçe" : "English";
+        button.setAttribute("aria-label", button.title);
+      }
+
+      button.addEventListener("click", () => {
+        const next = current === "tr" ? "en" : "tr";
+        store(next);
+        apply(next);
+      });
+      apply(initial());
+    })();
+  </script>
+</body>
+</html>
