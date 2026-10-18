@@ -1,15 +1,8 @@
 # Kalk
 
-**Kalk** (Turkish for *"get up!"*) sits in your tray / menu bar and reminds you
-to do **10 bodyweight squats after every 45 minutes** of active computer use.
-
-> A 2024 study ([Scand J Med Sci Sports, doi:10.1111/sms.14628](https://doi.org/10.1111/sms.14628))
-> found that breaking up 8.5 hours of sitting with 10 squats — or a 3‑minute
-> walk — every 45 minutes lowered blood‑sugar response more than a single
-> 30‑minute walk. (18 men with overweight or obesity — a small study, so treat
-> it as a nudge, not a promise.)
-
-Windows and macOS. Everything stays on your machine — no accounts, no telemetry.
+**Kalk** (Turkish for *"get up!"*) is a tiny Windows and macOS app that reminds
+you to do **10 squats after every 45 minutes** at the computer. One minute, no
+gym, better blood sugar.
 
 <p align="center">
   <picture>
@@ -26,126 +19,51 @@ Windows and macOS. Everything stays on your machine — no accounts, no telemetr
   </picture>
 </p>
 
-**Website:** https://besinci.github.io/kalk/
+<p align="center">
+  <a href="https://apps.microsoft.com/detail/9NVMFFFQHT6S"><b>Microsoft Store</b></a> ·
+  <a href="https://github.com/besinci/kalk/releases/latest"><b>Download for macOS</b></a> ·
+  <a href="https://besinci.github.io/kalk/">Website</a>
+</p>
 
-## What it does
+## Why squats?
 
-- **Counts only real computer time.** The timer runs while you're using the
-  keyboard or mouse. Step away for 10 minutes, or put the machine to sleep, and
-  it starts over — you already got up.
-- **Reminds you without getting in the way.** When it's time, a small popup
-  opens next to the tray icon with a chime. It doesn't steal keyboard focus, so
-  you can finish your sentence. **Done**, **Snooze 5 min** or **Skip**.
-- **Squat along.** An animated character does the reps with a counter.
-- **Notices when you walked away.** Left a reminder open and came back later?
-  Kalk asks whether you did your squats.
-- **Respects your day.** Active hours (default Mon–Fri, 09:00–18:00), plus
-  *Pause for 1 hour* and *Pause for today* from the tray menu.
-- **Stats.** Today against your daily goal, your streak, the last 7 days and
-  total squats.
-- **English and Türkçe**, following your system language.
+A [2024 study](https://doi.org/10.1111/sms.14628) found that breaking up 8.5
+hours of sitting with 10 squats every 45 minutes lowered blood sugar more than
+one 30‑minute walk. It was small (18 men), so treat it as a nudge, not a
+promise.
 
-Everything is adjustable in settings: interval, reps, daily goal, idle reset,
-snooze length, active hours and days, launch at login, sound and language.
+## Features
+
+- **Counts real computer time.** Step away or put the computer to sleep and the
+  timer starts over.
+- **Doesn't steal focus.** The reminder pops up in the corner of the screen with
+  a chime: **Done**, **Snooze** or **Skip**.
+- **Squat along** with an animated character that counts the reps.
+- **Respects your day:** active hours and days, plus pause for an hour or for
+  today.
+- **Streaks and stats** for today, the last 7 days and all time.
+- **Adjustable** interval, reps, goal and more. English and Türkçe.
 
 ## Install
 
-**Windows 10/11:** get Kalk from the
-[Microsoft Store](https://apps.microsoft.com/detail/9NVMFFFQHT6S) — no
-SmartScreen warning, and the Store keeps it updated.
-
-Or download the latest release from
-[Releases](https://github.com/besinci/kalk/releases/latest):
-`Kalk_<version>_x64-setup.exe` for Windows 10/11, or
-`Kalk_<version>_universal.dmg` for macOS 11+ (Intel and Apple Silicon).
-Builds of the latest `main` are on the
-[Actions tab](https://github.com/besinci/kalk/actions/workflows/build.yml).
-
-- **Windows:** the installer is unsigned, so SmartScreen will warn you —
-  *More info → Run anyway*.
-- **macOS:** the build isn't notarized yet. Open Kalk once, then go to
-  *System Settings → Privacy & Security* and click *Open Anyway*. If macOS
-  says the app "is damaged", run `xattr -cr /Applications/Kalk.app`.
+- **Windows 10/11:** [Microsoft Store](https://apps.microsoft.com/detail/9NVMFFFQHT6S).
+  It updates itself. (An installer is also on
+  [Releases](https://github.com/besinci/kalk/releases/latest); it's unsigned, so
+  SmartScreen warns you: *More info → Run anyway*.)
+- **macOS 11+:** the `.dmg` from
+  [Releases](https://github.com/besinci/kalk/releases/latest). It isn't
+  notarized yet: open Kalk once, then *System Settings → Privacy & Security →
+  Open Anyway*.
 
 ## Privacy
 
-Kalk reads only *how long ago* you last touched the keyboard or mouse — never
-what you typed or where you clicked. Settings and the break log are stored
-locally (`settings.json` and `kalk.db` in the app data folder:
-`%APPDATA%\io.github.besinci.kalk` on Windows,
-`~/Library/Application Support/io.github.besinci.kalk` on macOS). Nothing is
-sent anywhere.
+No account, no cloud, no telemetry. Kalk only checks *how long ago* you last
+touched the keyboard or mouse, never what you typed. Settings and the break log
+stay on your computer. [Privacy policy](https://besinci.github.io/kalk/privacy.html)
 
 ## Development
 
-Requirements: [Rust](https://rustup.rs) (stable), Node.js 20+, and the
-[Tauri prerequisites](https://tauri.app/start/prerequisites/) for your OS.
-
-```sh
-npm install
-npm run tauri dev               # run with hot reload; click the tray icon
-KALK_SHOW=1 npm run tauri dev   # open the popup immediately
-npm run tauri build             # release build + installer
-npm run check                   # type-check the UI
-npm run screenshots             # regenerate docs/ and Store screenshots (needs Edge or Chrome)
-cd src-tauri && cargo test      # timer, log and stats tests
-```
-
-**Debug builds run fast:** every minute in the settings counts as a second (a
-reminder after 45 s, snooze 5 s), the idle reset is at least 30 s, active
-hours are ignored and launch at login is left alone. Release builds use real
-minutes.
-
-### Layout
-
-```
-src/
-  routes/+page.svelte   the popup: info, reminder, settings and stats views
-  lib/Squatter.svelte   the animated character
-  lib/Settings.svelte   settings view
-  lib/Stats.svelte      stats view
-  lib/i18n.svelte.ts    popup strings (en, tr)
-src-tauri/src/
-  lib.rs                app setup, plugins, window/run events
-  timer.rs              the break timer: pure logic, fake-clock tests
-  breaks.rs             runs the timer; commands for the popup; tray tooltip
-  idle.rs               system idle time (Windows / macOS)
-  settings.rs           settings.json
-  db.rs                 SQLite break log
-  stats.rs              streak and 7-day stats
-  popup.rs              popup show/hide, reminder mode, positioning
-  tray.rs               tray icon + right-click menu
-  i18n.rs, sound.rs     tray strings, reminder chime
-assets/                 icon sources
-```
-
-### Releasing
-
-```sh
-node scripts/bump-version.mjs 0.2.0     # package.json, Cargo.toml, tauri.conf.json
-(cd src-tauri && cargo check)           # updates Cargo.lock
-git commit -am "Release 0.2.0" && git tag v0.2.0 && git push origin main v0.2.0
-```
-
-The tag runs the Release workflow, which builds both platforms into a
-**draft** release with the updater files (`latest.json` and signatures).
-Review it and publish; installed copies offer the update within a few hours.
-
-Secrets the workflow uses:
-
-| Secret | What |
-|---|---|
-| `TAURI_SIGNING_PRIVATE_KEY` | updater signing key (`~/.tauri/kalk-updater.key`; keep a backup — losing it means existing installs can't verify new updates) |
-| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | optional; the key has no password |
-| `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY` | Developer ID Application certificate (`.p12`, base64) for macOS signing |
-| `APPLE_API_ISSUER`, `APPLE_API_KEY`, `APPLE_API_KEY_P8` | App Store Connect API key for notarization |
-
-Without the Apple secrets the macOS build is unsigned.
-
-Icons: `python3 assets/make_icons.py assets && npx tauri icon assets/app-icon.png`
-then copy `assets/tray-*.png` into `src-tauri/icons/`.
-
-See [PLAN.md](PLAN.md) for the roadmap.
+See [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 
