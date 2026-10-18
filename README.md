@@ -51,9 +51,8 @@ promise.
   [Releases](https://github.com/besinci/kalk/releases/latest); it's unsigned, so
   SmartScreen warns you: *More info → Run anyway*.)
 - **macOS 11+:** the `.dmg` from
-  [Releases](https://github.com/besinci/kalk/releases/latest). It isn't
-  notarized yet: open Kalk once, then *System Settings → Privacy & Security →
-  Open Anyway*.
+  [Releases](https://github.com/besinci/kalk/releases/latest), signed and
+  notarized by Apple. It updates itself.
 
 ## Privacy
 
