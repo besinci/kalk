@@ -64,11 +64,11 @@ squat, break reminder, standing reminder, sitting, desk exercise, health, stretc
 
 ### Açıklama
 
-Bütün gün oturuyor musun? Kalk, bilgisayar başında her 45 dakikalık aktif kullanımdan sonra 10 squat yapmanı hatırlatan küçük bir tepsi uygulaması. Bir dakika, spor salonu yok, masandan ayrılmana bile gerek yok.
+Bütün gün oturuyor musun? Kalk, bilgisayar başında her 45 dakikalık aktif kullanımdan sonra 10 squat yapmanı hatırlatan küçük bir uygulama. Yalnızca bir dakika, spor salonu yok, masandan ayrılmana bile gerek yok.
 
 Neden her 45 dakikada squat? 2024'te yapılan bir çalışma (Scandinavian Journal of Medicine & Science in Sports), 8,5 saatlik oturmayı her 45 dakikada 10 squat ile bölmenin kan şekeri yanıtını tek bir 30 dakikalık yürüyüşten daha fazla düşürdüğünü buldu. 18 erkekle yapılmış küçük bir çalışma; bunu bir vaat değil, bir hatırlatma olarak gör.
 
-Kalk yalnızca gerçek bilgisayar süresini sayar. Sayaç klavyeyi ya da fareyi kullanırken çalışır; 10 dakika uzaklaşırsan ya da bilgisayarı uyku moduna alırsan baştan başlar, çünkü zaten kalkmışsındır. Zamanı gelince tepsi simgesinin yanında bir sesle küçük bir pencere açılır. Klavye odağını çalmaz, cümleni bitirebilirsin. Yaptım, Ertele ya da Atla.
+Kalk yalnızca gerçek bilgisayar süresini sayar. Sayaç klavyeyi ya da fareyi kullanırken çalışır; 10 dakika uzaklaşırsan ya da bilgisayarı uyku moduna alırsan baştan başlar, çünkü zaten kalkmışsındır. Zamanı gelince ekranın köşesinde bir sesle küçük bir pencere açılır. Klavye odağını çalmaz, cümleni bitirebilirsin. Yaptım, Ertele ya da Atla.
 
 Hareketli bir karakter tekrarları seninle birlikte yapar ve sayar. İstatistikler günlük hedefine göre bugünü, serini, son 7 günü ve bugüne kadar yaptığın tüm squatları gösterir.
 
@@ -80,7 +80,7 @@ MIT lisansıyla ücretsiz ve açık kaynak.
 
 - Her 45 dakikalık bilgisayar kullanımından sonra 10 squat hatırlatır
 - Yalnızca aktif süreyi sayar; uzaklaşınca ya da uyku modunda sıfırlanır
-- Tepsinin yanında açılan, klavye odağını çalmayan hatırlatma
+- Ekranın köşesinde açılan, klavye odağını çalmayan hatırlatma
 - Tek tıkla Yaptım, Ertele ya da Atla
 - Hareketli karakter seninle squat yapar ve tekrarları sayar
 - Günlük hedef, seri, son 7 gün ve toplam squat
@@ -95,7 +95,7 @@ Microsoft Store'daki ilk sürüm.
 
 ### Kısa açıklama
 
-Bilgisayar başında her 45 dakikada bir 10 squat yapmanı hatırlatan tepsi uygulaması.
+Bilgisayar başında her 45 dakikada bir 10 squat yapmanı hatırlatan küçük bir uygulama.
 
 ### Arama terimleri (en fazla 7, her biri 30 karakter)
 
@@ -103,7 +103,7 @@ squat, mola hatırlatıcı, hareketsizlik, oturma, masa egzersizi, sağlık, esn
 
 ### Ekran görüntüsü başlıkları
 
-1. Geri sayım için tepsi simgesine tıkla
+1. Geri sayım için uygulama simgesine tıkla
 2. Zamanı gelince birlikte squat yap
 3. Serinin büyüdüğünü izle
 4. Gününe göre ayarla
