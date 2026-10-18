@@ -1,6 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import { fmtDay, t, weekdayOf } from "./i18n.svelte";
+  import { fmtDay, lang, t, weekdayOf } from "./i18n.svelte";
   import type { Stats } from "./types";
 
   let stats = $state<Stats | null>(null);
@@ -29,7 +29,7 @@
       </div>
       <div class="tile">
         <span class="tile-label">{t("totalSquats")}</span>
-        <span class="tile-value">{stats.total_squats.toLocaleString()}</span>
+        <span class="tile-value">{stats.total_squats.toLocaleString(lang())}</span>
       </div>
     </div>
 
