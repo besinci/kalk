@@ -50,7 +50,11 @@ snooze length, active hours and days, launch at login, sound and language.
 
 ## Install
 
-Download the latest release from
+**Windows 10/11:** get Kalk from the
+[Microsoft Store](https://apps.microsoft.com/detail/9NVMFFFQHT6S) — no
+SmartScreen warning, and the Store keeps it updated.
+
+Or download the latest release from
 [Releases](https://github.com/besinci/kalk/releases/latest):
 `Kalk_<version>_x64-setup.exe` for Windows 10/11, or
 `Kalk_<version>_universal.dmg` for macOS 11+ (Intel and Apple Silicon).
