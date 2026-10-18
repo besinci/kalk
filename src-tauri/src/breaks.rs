@@ -101,6 +101,17 @@ pub fn start<R: Runtime>(app: &AppHandle<R>) {
 fn apply_side_effects<R: Runtime>(app: &AppHandle<R>, settings: &Settings) {
     tray::set_language(app, settings.lang());
     // A dev build would register the debug binary to launch at login.
+    #[cfg(windows)]
+    if crate::store::packaged() {
+        let enable = settings.launch_at_login;
+        // Waits on WinRT calls, so keep it off the main thread.
+        thread::spawn(move || {
+            if let Err(e) = crate::store::set_launch_at_login(enable) {
+                eprintln!("kalk: can't update launch at login: {e}");
+            }
+        });
+        return;
+    }
     if !DEV {
         use tauri_plugin_autostart::ManagerExt;
         let autolaunch = app.autolaunch();

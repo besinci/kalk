@@ -84,3 +84,15 @@ jobs:
           # Updater artifacts need the signing key, which only release builds
           # have; the regular Build workflow leaves them off.
           args: ${{ matrix.args }} --config src-tauri/tauri.release.conf.json
+
+      # The same kalk.exe as an MSIX, to upload to Partner Center by hand.
+      - name: Microsoft Store package
+        if: runner.os == 'Windows'
+        run: node scripts/msix.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: kalk-msix
+          path: src-tauri/target/msix/*.msix
+          if-no-files-found: error
