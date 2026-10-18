@@ -1,6 +1,7 @@
 //! The tray popup: one frameless window anchored to the tray icon.
 //!
-//! Info mode (opened by the user) hides when it loses focus.
+//! Info mode (opened by the user) hides when it loses focus, unless the user
+//! has pinned it.
 //! Reminder mode (opened by the timer) is pinned: it shows without taking
 //! keyboard focus and stays up until the reminder is answered.
 
@@ -33,6 +34,9 @@ pub struct PopupState {
     tray_located: AtomicBool,
     /// When true the popup ignores blur (reminder mode).
     pinned: AtomicBool,
+    /// Set from the pin button: blur no longer hides the popup, but the close
+    /// button, Esc and the tray icon still do.
+    user_pinned: AtomicBool,
 }
 
 fn window<R: Runtime>(app: &AppHandle<R>) -> Option<WebviewWindow<R>> {
@@ -185,7 +189,8 @@ pub fn toggle<R: Runtime>(app: &AppHandle<R>) {
 }
 
 pub fn on_blur<R: Runtime>(app: &AppHandle<R>) {
-    if is_pinned(app) {
+    let state = app.state::<PopupState>();
+    if is_pinned(app) || state.user_pinned.load(Ordering::Relaxed) {
         return;
     }
     *app.state::<PopupState>().last_blur_hide.lock().unwrap() = Some(Instant::now());
@@ -195,4 +200,11 @@ pub fn on_blur<R: Runtime>(app: &AppHandle<R>) {
 #[tauri::command]
 pub fn hide_popup(app: AppHandle) {
     hide(&app);
+}
+
+#[tauri::command]
+pub fn set_popup_pinned(app: AppHandle, pinned: bool) {
+    app.state::<PopupState>()
+        .user_pinned
+        .store(pinned, Ordering::Relaxed);
 }

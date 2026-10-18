@@ -67,6 +67,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             popup::hide_popup,
+            popup::set_popup_pinned,
             quit_app,
             breaks::get_status,
             breaks::answer,
