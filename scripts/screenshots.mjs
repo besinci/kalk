@@ -1,6 +1,8 @@
 // Renders the popup with mocked Tauri IPC and saves the screenshots:
-//   docs/screenshots/        popup views for the README and site (340×480 @2x)
-//   store/screenshots/<lang>/ 1920×1080 Microsoft Store images
+//   docs/screenshots/<lang>/  captioned 1920×1080 WebP images for the README and
+//                             site, light and dark
+//   store/screenshots/<lang>/ the same as PNG for the Microsoft Store: every view
+//                             in light, plus the reminder in dark
 // Usage: node scripts/screenshots.mjs
 // Uses Edge or Chrome; set KALK_BROWSER to the executable to pick another.
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -111,7 +113,7 @@ async function popup({ lang, theme, view, reminder }) {
 }
 
 /** A 1920×1080 Store image: caption on the left, the popup on the right. */
-async function storeImage(png, { caption, theme }) {
+async function storeImage(png, { caption, theme, type = "png" }) {
   const dark = theme === "dark";
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 });
@@ -138,7 +140,7 @@ async function storeImage(png, { caption, theme }) {
 </div>
 <img src="data:image/png;base64,${Buffer.from(png).toString("base64")}">`);
   await page.evaluate(() => document.fonts.ready);
-  const out = await page.screenshot();
+  const out = await page.screenshot({ type, ...(type === "webp" && { quality: 90 }) });
   await page.close();
   return out;
 }
@@ -159,18 +161,14 @@ const SHOTS = [
 try {
   for (const lang of ["en", "tr"]) {
     for (const theme of ["light", "dark"]) {
-      for (const shot of SHOTS) {
+      for (const [i, shot] of SHOTS.entries()) {
         const png = await popup({ lang, theme, ...shot });
-        // The site has no Turkish settings shot.
-        if (!(lang === "tr" && shot.name === "settings")) {
-          const dir = lang === "tr" ? "docs/screenshots/tr" : "docs/screenshots";
-          save(`${dir}/${shot.name}-${theme}.png`, png);
-        }
-        // Store: every view in light, plus the reminder in dark.
+        const caption = CAPTIONS[lang][shot.name];
+        const name = `${i + 1}-${shot.name}-${theme}`;
+        save(`docs/screenshots/${lang}/${name}.webp`, await storeImage(png, { caption, theme, type: "webp" }));
         if (theme === "light" || shot.name === "reminder") {
-          const n = theme === "dark" ? 5 : SHOTS.indexOf(shot) + 1;
-          const image = await storeImage(png, { caption: CAPTIONS[lang][shot.name], theme });
-          save(`store/screenshots/${lang}/${n}-${shot.name}-${theme}.png`, image);
+          const n = theme === "dark" ? 5 : i + 1;
+          save(`store/screenshots/${lang}/${n}-${shot.name}-${theme}.png`, await storeImage(png, { caption, theme }));
         }
       }
     }

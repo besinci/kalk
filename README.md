@@ -6,16 +6,20 @@ gym, better blood sugar.
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/info-dark.png">
-    <img src="docs/screenshots/info-light.png" width="250" alt="Kalk popup: next squat break in 23 min, today 5 of 8 breaks">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/1-info-dark.webp">
+    <img src="docs/screenshots/en/1-info-light.webp" width="49%" alt="Kalk popup: next squat break in 23 min">
   </picture>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/reminder-dark.png">
-    <img src="docs/screenshots/reminder-light.png" width="250" alt="Reminder: time for 10 squats, with Done, Snooze and Skip">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/2-reminder-dark.webp">
+    <img src="docs/screenshots/en/2-reminder-light.webp" width="49%" alt="Reminder: time for 10 squats">
   </picture>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/stats-dark.png">
-    <img src="docs/screenshots/stats-light.png" width="250" alt="Stats: today, streak, total squats and the last 7 days">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/3-stats-dark.webp">
+    <img src="docs/screenshots/en/3-stats-light.webp" width="49%" alt="Stats: streak and the last 7 days">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/en/4-settings-dark.webp">
+    <img src="docs/screenshots/en/4-settings-light.webp" width="49%" alt="Settings">
   </picture>
 </p>
 
