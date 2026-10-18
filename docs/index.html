@@ -114,8 +114,6 @@
 
     .final { text-align: center; }
     .final .cta { justify-content: center; }
-    .store-badge { display: inline-flex; }
-    .store-badge img { display: block; height: 48px; width: auto; }
 
     footer { padding: 32px 0 48px; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; border-top: 1px solid var(--line); }
     footer a { color: inherit; }
@@ -153,9 +151,8 @@
           at the computer. One minute, no gym, better blood sugar.
         </p>
         <div class="cta">
-          <a class="store-badge" href="https://apps.microsoft.com/detail/9NVMFFFQHT6S?mode=direct"><img src="badges/microsoft-store-en.svg" data-tr-src="badges/microsoft-store-tr.svg" width="161" height="44" alt="Get it from Microsoft" data-tr-alt="Microsoft&#x27;tan edinin"></a>
-          <a class="button primary" href="https://github.com/besinci/kalk/releases/latest" data-tr="macOS için indir">Download for macOS</a>
-          <a class="button secondary" href="https://github.com/besinci/kalk" data-tr="GitHub&#x27;da incele">View on GitHub</a>
+          <a class="button primary" href="https://apps.microsoft.com/detail/9NVMFFFQHT6S?mode=direct"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M0 0h7.5v7.5H0zM8.5 0H16v7.5H8.5zM0 8.5h7.5V16H0zM8.5 8.5H16V16H8.5z"/></svg><span data-tr="Microsoft Store&#x27;dan al">Get it on the Microsoft Store</span></a>
+          <a class="button secondary" href="https://github.com/besinci/kalk/releases/latest" data-tr="macOS için indir">Download for macOS</a>
         </div>
         <p class="platforms" data-tr="Windows 10/11 · macOS 11+ · Türkçe ve İngilizce">Windows 10/11 · macOS 11+ · English &amp; Türkçe</p>
       </div>
@@ -291,8 +288,8 @@
       <h2 data-tr="Kalk! Hadi ayağa.">Kalk! Get up.</h2>
       <p class="sub" style="margin-left:auto;margin-right:auto" data-tr="MIT lisansıyla ücretsiz ve açık kaynak.">Free and open source under the MIT license.</p>
       <div class="cta">
-        <a class="store-badge" href="https://apps.microsoft.com/detail/9NVMFFFQHT6S?mode=direct"><img src="badges/microsoft-store-en.svg" data-tr-src="badges/microsoft-store-tr.svg" width="161" height="44" alt="Get it from Microsoft" data-tr-alt="Microsoft&#x27;tan edinin"></a>
-        <a class="button primary" href="https://github.com/besinci/kalk/releases/latest" data-tr="macOS için indir">Download for macOS</a>
+        <a class="button primary" href="https://apps.microsoft.com/detail/9NVMFFFQHT6S?mode=direct"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M0 0h7.5v7.5H0zM8.5 0H16v7.5H8.5zM0 8.5h7.5V16H0zM8.5 8.5H16V16H8.5z"/></svg><span data-tr="Microsoft Store&#x27;dan al">Get it on the Microsoft Store</span></a>
+        <a class="button secondary" href="https://github.com/besinci/kalk/releases/latest" data-tr="macOS için indir">Download for macOS</a>
       </div>
     </section>
 
@@ -350,8 +347,6 @@
           swap(el, "tr", (e) => e.innerHTML, (e, v) => (e.innerHTML = v)));
         document.querySelectorAll("[data-tr-alt]").forEach((el) =>
           swap(el, "trAlt", (e) => e.alt, (e, v) => (e.alt = v)));
-        document.querySelectorAll("[data-tr-src]").forEach((el) =>
-          swap(el, "trSrc", (e) => e.getAttribute("src"), (e, v) => e.setAttribute("src", v)));
         document.querySelectorAll("[data-tr-aria]").forEach((el) =>
           swap(el, "trAria", (e) => e.getAttribute("aria-label"), (e, v) => e.setAttribute("aria-label", v)));
         // Turkish screenshots live in screenshots/tr/.
