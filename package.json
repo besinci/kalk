@@ -1,7 +1,7 @@
 {
   "name": "kalk",
   "version": "0.2.0",
-  "description": "Kalk \u2014 10 squats every 45 minutes. A tiny tray app for squat breaks.",
+  "description": "Kalk — 10 squats every 45 minutes. A tiny tray app for squat breaks.",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
@@ -10,7 +10,8 @@
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "screenshots": "node scripts/screenshots.mjs"
   },
   "license": "MIT",
   "dependencies": {
@@ -22,6 +23,7 @@
     "@sveltejs/kit": "^2.65.1",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tauri-apps/cli": "^2",
+    "puppeteer-core": "^23.11.1",
     "svelte": "^5.56.3",
     "svelte-check": "^4.6.0",
     "typescript": "~6.0.3",

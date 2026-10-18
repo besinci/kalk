@@ -110,19 +110,16 @@ squat, mola hatırlatıcı, hareketsizlik, oturma, masa egzersizi, sağlık, esn
 
 ## Screenshots
 
-Desktop screenshots must be PNG, at least 1366×768 (1920×1080 recommended),
-up to 10 per language. The app windows are 340×480, so each shot is a
-1920×1080 Windows desktop with the popup in its real place by the tray.
+`npm run screenshots` renders them into `store/screenshots/en` and
+`store/screenshots/tr` (1920×1080 PNG, the Store's recommended size): the
+caption above on the left, the popup with sample data on the right. Upload
+them in order:
 
-Light theme for English, Turkish UI for the Turkish listing (switch the
-language in Kalk's settings). Clean wallpaper, no other tray clutter or
-notifications, clock showing a plausible weekday time (e.g. 14:20).
-
-1. **Info popup** — next break in ~23 min, today 5 of 8.
-2. **Reminder** — mid-squat, rep counter around 4/10, Done / Snooze / Skip visible.
-3. **Stats** — a streak of several days, filled last-7-days chart.
-4. **Settings** — interval, reps, active hours visible.
-5. *(optional)* **Dark theme** reminder, to show it follows the system.
+1. **Info popup** — next break in 23 min, today 5 of 8.
+2. **Reminder** — mid-squat at 4/10, Done / Snooze / Skip visible.
+3. **Stats** — a 4-day streak and a filled last-7-days chart.
+4. **Settings** — the Breaks card.
+5. **Reminder, dark theme** — to show it follows the system.
 
 ## Partner Center notes
 

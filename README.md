@@ -87,6 +87,7 @@ npm run tauri dev               # run with hot reload; click the tray icon
 KALK_SHOW=1 npm run tauri dev   # open the popup immediately
 npm run tauri build             # release build + installer
 npm run check                   # type-check the UI
+npm run screenshots             # regenerate docs/ and Store screenshots (needs Edge or Chrome)
 cd src-tauri && cargo test      # timer, log and stats tests
 ```
 
