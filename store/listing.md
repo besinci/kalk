@@ -20,7 +20,7 @@ Sitting all day? Kalk (Turkish for "get up!") is a tiny tray app that reminds yo
 
 Why squats every 45 minutes? A 2024 study (Scandinavian Journal of Medicine & Science in Sports) found that breaking up 8.5 hours of sitting with 10 squats every 45 minutes lowered the blood-sugar response more than a single 30-minute walk. It was a small study of 18 men, so treat it as a nudge, not a promise.
 
-Kalk only counts real computer time. The timer runs while you use the keyboard or mouse; step away for 10 minutes or put the PC to sleep and it starts over, because you already got up. When it's time, a small popup opens next to the tray icon with a chime. It doesn't steal keyboard focus, so you can finish your sentence first. Tap Done, Snooze or Skip.
+Kalk only counts real computer time. The timer runs while you use the keyboard or mouse and pauses when you step away or the PC sleeps, so only time at the desk counts. Prefer a fresh start after a break? Turn that on in Settings. When it's time, a small popup opens next to the tray icon with a chime. It doesn't steal keyboard focus, so you can finish your sentence first. Tap Done, Snooze or Skip.
 
 An animated character does the reps with you and counts them. Stats show today against your daily goal, your streak, the last 7 days and every squat you've done.
 
@@ -31,19 +31,24 @@ Free and open source under the MIT license.
 ### Product features
 
 - Reminds you to do 10 squats after every 45 minutes of computer use
-- Counts only active time; resets when you step away or the PC sleeps
+- Counts only active time; pauses when you step away or the PC sleeps
 - Reminder by the tray that doesn't steal keyboard focus
 - Done, Snooze or Skip in one click
 - Animated character squats along and counts the reps
 - Daily goal, streak, last 7 days and total squats
 - Active hours and days, plus Pause for 1 hour or for today
 - Adjustable interval, reps, goal, snooze, sound and launch at startup
+- Light and dark theme; drag the popup anywhere, even to another monitor
 - English and Turkish
 - No account, no telemetry, no ads; free and open source
 
 ### What's new in this version
 
-First release on the Microsoft Store.
+- Drag the popup anywhere, even to another monitor; it opens there next time, and so do reminders. Double-click its header to send it back to the tray.
+- New sun/moon button for light and dark theme.
+- Stepping away now pauses the countdown instead of restarting it. You can turn restarting back on in Settings.
+- A pinned popup stays open after you answer a reminder.
+- Slower squat animation, easier to follow along.
 
 ### Short description
 
@@ -59,6 +64,7 @@ squat, break reminder, standing reminder, sitting, desk exercise, health, stretc
 2. Squat along when it's time
 3. Watch your streak grow
 4. Make it fit your day
+5. Light or dark, your pick
 
 ## Türkçe
 
@@ -68,7 +74,7 @@ Bütün gün oturuyor musun? Kalk, bilgisayar başında her 45 dakikalık aktif 
 
 Neden her 45 dakikada squat? 2024'te yapılan bir çalışma (Scandinavian Journal of Medicine & Science in Sports), 8,5 saatlik oturmayı her 45 dakikada 10 squat ile bölmenin kan şekeri yanıtını tek bir 30 dakikalık yürüyüşten daha fazla düşürdüğünü buldu. 18 erkekle yapılmış küçük bir çalışma; bunu bir vaat değil, bir hatırlatma olarak gör.
 
-Kalk yalnızca gerçek bilgisayar süresini sayar. Sayaç klavyeyi ya da fareyi kullanırken çalışır; 10 dakika uzaklaşırsan ya da bilgisayarı uyku moduna alırsan baştan başlar, çünkü zaten kalkmışsındır. Zamanı gelince ekranın köşesinde bir sesle küçük bir pencere açılır. Klavye odağını çalmaz, cümleni bitirebilirsin. Yaptım, Ertele ya da Atla.
+Kalk yalnızca gerçek bilgisayar süresini sayar. Sayaç klavyeyi ya da fareyi kullanırken çalışır; uzaklaştığında ya da bilgisayar uykudayken durur, böylece yalnızca masa başındaki süre sayılır. Moladan sonra baştan başlamasını istersen ayarlardan açabilirsin. Zamanı gelince ekranın köşesinde bir sesle küçük bir pencere açılır. Klavye odağını çalmaz, cümleni bitirebilirsin. Yaptım, Ertele ya da Atla.
 
 Hareketli bir karakter tekrarları seninle birlikte yapar ve sayar. İstatistikler günlük hedefine göre bugünü, serini, son 7 günü ve bugüne kadar yaptığın tüm squatları gösterir.
 
@@ -79,19 +85,24 @@ MIT lisansıyla ücretsiz ve açık kaynak.
 ### Ürün özellikleri
 
 - Her 45 dakikalık bilgisayar kullanımından sonra 10 squat hatırlatır
-- Yalnızca aktif süreyi sayar; uzaklaşınca ya da uyku modunda sıfırlanır
+- Yalnızca aktif süreyi sayar; uzaklaşınca ya da uyku modunda durur
 - Ekranın köşesinde açılan, klavye odağını çalmayan hatırlatma
 - Tek tıkla Yaptım, Ertele ya da Atla
 - Hareketli karakter seninle squat yapar ve tekrarları sayar
 - Günlük hedef, seri, son 7 gün ve toplam squat
 - Aktif saatler ve günler; 1 saatlik ya da bugünlük duraklatma
 - Aralık, tekrar, hedef, erteleme, ses ve açılışta başlatma ayarları
+- Açık ve koyu tema; pencereyi istediğin yere, başka bir monitöre bile taşı
 - Türkçe ve İngilizce
 - Hesap, telemetri ve reklam yok; ücretsiz ve açık kaynak
 
 ### Bu sürümdeki yenilikler
 
-Microsoft Store'daki ilk sürüm.
+- Pencereyi istediğin yere, başka bir monitöre bile sürükle; bir dahaki sefere ve hatırlatmalarda orada açılır. Başlığa çift tıklayınca simgenin yanına döner.
+- Açık ve koyu tema için yeni ay/güneş düğmesi.
+- Uzaklaşınca geri sayım artık baştan başlamıyor, duruyor. İstersen ayarlardan eski davranışı açabilirsin.
+- Sabitlenmiş pencere, hatırlatmayı yanıtladıktan sonra da açık kalıyor.
+- Squat animasyonu yavaşladı, birlikte yapmak daha kolay.
 
 ### Kısa açıklama
 
@@ -107,6 +118,7 @@ squat, mola hatırlatıcı, hareketsizlik, oturma, masa egzersizi, sağlık, esn
 2. Zamanı gelince birlikte squat yap
 3. Serinin büyüdüğünü izle
 4. Gününe göre ayarla
+5. Açık ya da koyu, sen seç
 
 ## Screenshots
 
@@ -119,7 +131,7 @@ them in order:
 2. **Reminder** — mid-squat at 4/10, Done / Snooze / Skip visible.
 3. **Stats** — a 4-day streak and a filled last-7-days chart.
 4. **Settings** — the Breaks card.
-5. **Reminder, dark theme** — to show it follows the system.
+5. **Reminder, dark theme** — to show the dark theme.
 
 ## Partner Center notes
 

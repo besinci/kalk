@@ -39,7 +39,7 @@ promise.
 ## Features
 
 - **Counts real computer time.** Step away or put the computer to sleep and the
-  timer starts over.
+  timer pauses (or starts over, if you turn that on).
 - **Doesn't steal focus.** The reminder pops up in the corner of the screen with
   a chime: **Done**, **Snooze** or **Skip**.
 - **Squat along** with an animated character that counts the reps.
