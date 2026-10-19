@@ -1,0 +1,93 @@
+name: App Store
+
+# Builds the sandboxed Mac App Store version (the `app-store` feature and
+# src-tauri/tauri.appstore.conf.json), signs it into a .pkg and uploads it to
+# App Store Connect, where it shows up under TestFlight. Run it by hand from
+# the Actions tab after a release; each run gets a new build number.
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Upload to App Store Connect (otherwise only keep the .pkg as an artifact)
+        type: boolean
+        default: true
+
+env:
+  APP_IDENTITY: "Apple Distribution: ALI OSMAN BESINCI (P3RW8LFH8L)"
+  INSTALLER_IDENTITY: "3rd Party Mac Developer Installer: ALI OSMAN BESINCI (P3RW8LFH8L)"
+
+jobs:
+  appstore:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - run: npm ci
+
+      - name: Certificates and provisioning profile
+        env:
+          APPSTORE_CERTIFICATE: ${{ secrets.APPSTORE_CERTIFICATE }}
+          APPSTORE_INSTALLER_CERTIFICATE: ${{ secrets.APPSTORE_INSTALLER_CERTIFICATE }}
+          APPSTORE_CERTIFICATE_PASSWORD: ${{ secrets.APPSTORE_CERTIFICATE_PASSWORD }}
+          APPSTORE_PROVISIONING_PROFILE: ${{ secrets.APPSTORE_PROVISIONING_PROFILE }}
+        run: |
+          keychain="$RUNNER_TEMP/appstore.keychain-db"
+          password="$(openssl rand -hex 16)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          for name in APPSTORE_CERTIFICATE APPSTORE_INSTALLER_CERTIFICATE; do
+            printf '%s' "${!name}" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+            security import "$RUNNER_TEMP/cert.p12" -k "$keychain" \
+              -P "$APPSTORE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/productbuild
+          done
+          rm "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          security find-identity -v "$keychain"
+          printf '%s' "$APPSTORE_PROVISIONING_PROFILE" | base64 --decode > src-tauri/embedded.provisionprofile
+
+      - name: Build
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ env.APP_IDENTITY }}
+        run: |
+          # App Store Connect needs a new CFBundleVersion for every upload.
+          jq --arg build "${{ github.run_number }}" '.bundle.macOS.bundleVersion = $build' \
+            src-tauri/tauri.appstore.conf.json > "$RUNNER_TEMP/appstore.conf.json"
+          npx tauri build --target universal-apple-darwin --features app-store \
+            --config "$RUNNER_TEMP/appstore.conf.json"
+          app=src-tauri/target/universal-apple-darwin/release/bundle/macos/Kalk.app
+          codesign -d --entitlements - "$app"
+          xcrun productbuild --sign "$INSTALLER_IDENTITY" --component "$app" /Applications Kalk.pkg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kalk-appstore-pkg
+          path: Kalk.pkg
+          if-no-files-found: error
+
+      - name: Upload to App Store Connect
+        if: inputs.upload
+        env:
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s' "$APPLE_API_KEY_P8" > ~/.appstoreconnect/private_keys/AuthKey_$APPLE_API_KEY.p8
+          xcrun altool --upload-app --type macos --file Kalk.pkg \
+            --apiKey "$APPLE_API_KEY" --apiIssuer "$APPLE_API_ISSUER"

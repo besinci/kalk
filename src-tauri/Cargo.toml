@@ -13,6 +13,11 @@ edition = "2024"
 name = "kalk_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+# Mac App Store build: sandboxed, no self-updater, launch at login through
+# SMAppService. See tauri.appstore.conf.json.
+app-store = ["dep:objc2-service-management"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -38,6 +43,11 @@ windows = { version = "0.62", features = [
   "Win32_UI_Input_KeyboardAndMouse",
   "Win32_UI_WindowsAndMessaging",
 ] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSSound"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSError", "NSString"] }
+objc2-service-management = { version = "0.3", optional = true }
 
 # https://tauri.app/concept/size/#cargo-configuration
 [profile.release]

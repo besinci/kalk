@@ -101,9 +101,14 @@ pub fn start<R: Runtime>(app: &AppHandle<R>) {
 fn apply_side_effects<R: Runtime>(app: &AppHandle<R>, settings: &Settings) {
     tray::set_language(app, settings.lang());
     // A dev build would register the debug binary to launch at login.
+    if !DEV {
+        set_launch_at_login(app, settings.launch_at_login);
+    }
+}
+
+fn set_launch_at_login<R: Runtime>(app: &AppHandle<R>, enable: bool) {
     #[cfg(windows)]
     if crate::store::packaged() {
-        let enable = settings.launch_at_login;
         // Waits on WinRT calls, so keep it off the main thread.
         thread::spawn(move || {
             if let Err(e) = crate::store::set_launch_at_login(enable) {
@@ -112,17 +117,24 @@ fn apply_side_effects<R: Runtime>(app: &AppHandle<R>, settings: &Settings) {
         });
         return;
     }
-    if !DEV {
+    #[cfg(all(target_os = "macos", feature = "app-store"))]
+    let result = {
+        let _ = app;
+        crate::store::set_launch_at_login(enable)
+    };
+    #[cfg(not(all(target_os = "macos", feature = "app-store")))]
+    let result = {
         use tauri_plugin_autostart::ManagerExt;
         let autolaunch = app.autolaunch();
-        let result = if settings.launch_at_login {
+        if enable {
             autolaunch.enable()
         } else {
             autolaunch.disable()
-        };
-        if let Err(e) = result {
-            eprintln!("kalk: can't update launch at login: {e}");
         }
+        .map_err(|e| e.to_string())
+    };
+    if let Err(e) = result {
+        eprintln!("kalk: can't update launch at login: {e}");
     }
 }
 

@@ -14,14 +14,15 @@ pub fn chime() {
     };
 }
 
+/// NSSound rather than running `afplay`, which the App Store sandbox may not
+/// allow. Sounds looked up by name stay cached, so it plays to the end.
 #[cfg(target_os = "macos")]
 pub fn chime() {
-    // Waited on in a thread so the finished process doesn't linger.
-    std::thread::spawn(|| {
-        let _ = std::process::Command::new("afplay")
-            .arg("/System/Library/Sounds/Glass.aiff")
-            .status();
-    });
+    use objc2_app_kit::NSSound;
+    use objc2_foundation::NSString;
+    if let Some(sound) = NSSound::soundNamed(&NSString::from_str("Glass")) {
+        sound.play();
+    }
 }
 
 #[cfg(not(any(windows, target_os = "macos")))]

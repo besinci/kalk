@@ -20,12 +20,15 @@ fn quit_app(app: tauri::AppHandle) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
-        // A second launch just opens the existing popup instead of adding a
-        // second tray icon.
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            popup::show(app);
-        }))
+    let builder = tauri::Builder::default();
+    // A second launch just opens the existing popup instead of adding a
+    // second tray icon. Its socket lives in /tmp, out of reach of the App
+    // Store sandbox; there macOS keeps to one copy anyway (see Reopen below).
+    #[cfg(not(feature = "app-store"))]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        popup::show(app);
+    }));
+    builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_autostart::init(
@@ -83,14 +86,15 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building Kalk")
-        .run(|_app, event| {
+        .run(|_app, event| match event {
             // Keep running in the tray when no window is visible; an explicit
             // app.exit(code) carries a code and is allowed through.
-            if let RunEvent::ExitRequested {
+            RunEvent::ExitRequested {
                 api, code: None, ..
-            } = event
-            {
-                api.prevent_exit();
-            }
+            } => api.prevent_exit(),
+            // Opening Kalk again from Finder or Launchpad shows the popup.
+            #[cfg(target_os = "macos")]
+            RunEvent::Reopen { .. } => popup::show(_app),
+            _ => {}
         });
 }

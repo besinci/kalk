@@ -61,7 +61,9 @@ impl Default for Settings {
             start: "09:00".into(),
             end: "18:00".into(),
             days: vec![0, 1, 2, 3, 4],
-            launch_at_login: true,
+            // App Store rules: nothing may run at login without the user
+            // turning it on.
+            launch_at_login: !cfg!(feature = "app-store"),
             sound: true,
             language: Language::System,
             theme: Theme::System,

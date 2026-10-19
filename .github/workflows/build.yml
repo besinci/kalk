@@ -55,6 +55,13 @@ jobs:
 
       - run: npx tauri build ${{ matrix.args }}
 
+      # The Mac App Store code only builds in the App Store workflow, which
+      # needs the signing secrets; catch compile errors here first.
+      - name: Check the App Store build
+        if: runner.os == 'macOS'
+        working-directory: src-tauri
+        run: cargo clippy --features app-store -- -D warnings
+
       - uses: actions/upload-artifact@v4
         with:
           name: kalk-${{ matrix.name }}

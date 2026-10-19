@@ -3,6 +3,7 @@
 //                             site, light and dark
 //   store/screenshots/<lang>/ the same as PNG for the Microsoft Store: every view
 //                             in light, plus the reminder in dark
+//   store/appstore/<lang>/    that set at 2880×1800 (16:10) for the Mac App Store
 // Usage: node scripts/screenshots.mjs
 // Uses Edge or Chrome; set KALK_BROWSER to the executable to pick another.
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -53,6 +54,11 @@ const CAPTIONS = {
     stats: "Serinin büyüdüğünü izle",
     settings: "Gününe göre ayarla",
   },
+};
+// The Mac has a menu bar, not a tray.
+const MAC_CAPTIONS = {
+  en: { info: "Click the menu bar icon for your countdown" },
+  tr: { info: "Geri sayım için menü çubuğundaki simgeye tıkla" },
 };
 const VIEW_LABELS = {
   settings: { en: "Settings", tr: "Ayarlar" },
@@ -112,14 +118,18 @@ async function popup({ lang, theme, view, reminder }) {
   return png;
 }
 
-/** A 1920×1080 Store image: caption on the left, the popup on the right. */
-async function storeImage(png, { caption, theme, type = "png" }) {
+/**
+ * A Store image: caption on the left, the popup on the right. 1920×1080 by
+ * default; `mac` makes it 1920×1200 rendered at 1.5× (2880×1800).
+ */
+async function storeImage(png, { caption, theme, type = "png", mac = false }) {
   const dark = theme === "dark";
+  const height = mac ? 1200 : 1080;
   const page = await browser.newPage();
-  await page.setViewport({ width: 1920, height: 1080 });
+  await page.setViewport({ width: 1920, height, deviceScaleFactor: mac ? 1.5 : 1 });
   await page.setContent(`<!doctype html>
 <style>
-  body { margin: 0; width: 1920px; height: 1080px; display: flex; align-items: center;
+  body { margin: 0; width: 1920px; height: ${height}px; display: flex; align-items: center;
     justify-content: center; gap: 140px;
     background: ${dark ? "radial-gradient(circle at 75% 50%, #3a2724, #1c1716 70%)" : "radial-gradient(circle at 75% 50%, #ffe9e1, #fffaf7 70%)"};
     font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
@@ -168,7 +178,10 @@ try {
         save(`docs/screenshots/${lang}/${name}.webp`, await storeImage(png, { caption, theme, type: "webp" }));
         if (theme === "light" || shot.name === "reminder") {
           const n = theme === "dark" ? 5 : i + 1;
-          save(`store/screenshots/${lang}/${n}-${shot.name}-${theme}.png`, await storeImage(png, { caption, theme }));
+          const file = `${lang}/${n}-${shot.name}-${theme}.png`;
+          save(`store/screenshots/${file}`, await storeImage(png, { caption, theme }));
+          const macCaption = MAC_CAPTIONS[lang][shot.name] ?? caption;
+          save(`store/appstore/${file}`, await storeImage(png, { caption: macCaption, theme, mac: true }));
         }
       }
     }

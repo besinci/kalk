@@ -1,0 +1,12 @@
+{
+  "bundle": {
+    "targets": ["app"],
+    "macOS": {
+      "minimumSystemVersion": "13.0",
+      "entitlements": "Entitlements.appstore.plist",
+      "files": {
+        "embedded.provisionprofile": "embedded.provisionprofile"
+      }
+    }
+  }
+}

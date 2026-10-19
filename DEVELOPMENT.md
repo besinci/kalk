@@ -36,6 +36,7 @@ src-tauri/src/
   db.rs                 SQLite break log
   stats.rs              streak and 7-day stats
   popup.rs              popup show/hide, reminder mode, positioning
+  store.rs              Microsoft Store / Mac App Store differences
   tray.rs               tray icon + right-click menu
   i18n.rs, sound.rs     tray strings, reminder chime
 assets/                 icon sources
@@ -68,6 +69,23 @@ Without the Apple secrets the macOS build is unsigned.
 (built by `scripts/msix.mjs`). Submit it as a new package in Partner Center,
 with the images from `npm run screenshots` (`store/screenshots/`) and the texts
 in `store/listing.md`.
+
+**Mac App Store:** run the **App Store** workflow by hand (Actions tab) after
+a release. It builds with the `app-store` feature and
+`src-tauri/tauri.appstore.conf.json` (sandboxed, macOS 13+, no self-updater,
+launch at login through SMAppService and off by default), signs a `.pkg` and
+uploads it to App Store Connect, where it appears under TestFlight. Listing
+texts are in `store/appstore.md`, screenshots in `store/appstore/`. Extra
+secrets it uses:
+
+| Secret | What |
+|---|---|
+| `APPSTORE_CERTIFICATE` | Apple Distribution certificate (`.p12`, base64) |
+| `APPSTORE_INSTALLER_CERTIFICATE` | Mac Installer Distribution certificate (`.p12`, base64) |
+| `APPSTORE_CERTIFICATE_PASSWORD` | password of both `.p12` files |
+| `APPSTORE_PROVISIONING_PROFILE` | Mac App Store provisioning profile for `io.github.besinci.kalk` (base64) |
+
+It uploads with the same `APPLE_API_*` key as notarization.
 
 Icons: `python3 assets/make_icons.py assets && npx tauri icon assets/app-icon.png`
 then copy `assets/tray-*.png` into `src-tauri/icons/`.

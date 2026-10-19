@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <!-- The webview loads the bundled UI through a local scheme; Tauri's App
+         Store guide asks for this so it isn't blocked. Kalk itself makes no
+         network connections. -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.application-identifier</key>
+    <string>P3RW8LFH8L.io.github.besinci.kalk</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>P3RW8LFH8L</string>
+</dict>
+</plist>
