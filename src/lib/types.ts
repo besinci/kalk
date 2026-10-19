@@ -20,6 +20,7 @@ export interface Settings {
   interval_mins: number;
   reps: number;
   daily_goal: number;
+  idle_reset: boolean;
   idle_mins: number;
   snooze_mins: number;
   active_hours: boolean;
@@ -31,6 +32,7 @@ export interface Settings {
   launch_at_login: boolean;
   sound: boolean;
   language: "system" | Lang;
+  theme: "system" | "light" | "dark";
 }
 
 export interface Stats {

@@ -12,7 +12,7 @@
     /** Called with the rep count each time the figure reaches the bottom. */
     onrep?: (count: number) => void;
   }
-  let { period = 3, reps, onrep }: Props = $props();
+  let { period = 4.5, reps, onrep }: Props = $props();
 
   const reducedMotion =
     typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -16,6 +16,14 @@ pub enum Language {
     Tr,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Theme {
+    System,
+    Light,
+    Dark,
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
@@ -23,6 +31,9 @@ pub struct Settings {
     pub reps: u32,
     /// Done breaks per day that count towards the streak.
     pub daily_goal: u32,
+    /// Restart the countdown after `idle_mins` away from the computer. When
+    /// off, time away only pauses it.
+    pub idle_reset: bool,
     pub idle_mins: u32,
     pub snooze_mins: u32,
     pub active_hours: bool,
@@ -34,6 +45,7 @@ pub struct Settings {
     pub launch_at_login: bool,
     pub sound: bool,
     pub language: Language,
+    pub theme: Theme,
 }
 
 impl Default for Settings {
@@ -42,6 +54,7 @@ impl Default for Settings {
             interval_mins: 45,
             reps: 10,
             daily_goal: 8,
+            idle_reset: false,
             idle_mins: 10,
             snooze_mins: 5,
             active_hours: true,
@@ -51,6 +64,7 @@ impl Default for Settings {
             launch_at_login: true,
             sound: true,
             language: Language::System,
+            theme: Theme::System,
         }
     }
 }
@@ -101,6 +115,7 @@ impl Settings {
         Config {
             interval: mins(self.interval_mins),
             idle_threshold: idle,
+            reset_when_away: self.idle_reset,
             snooze: mins(self.snooze_mins),
             tick: Duration::from_secs(if dev { 1 } else { 10 }),
             active_hours,

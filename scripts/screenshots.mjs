@@ -25,9 +25,9 @@ if (!browserPath) {
 
 // Sample data: a Friday afternoon a few days into a streak.
 const settings = {
-  interval_mins: 45, reps: 10, daily_goal: 8, idle_mins: 10, snooze_mins: 5,
+  interval_mins: 45, reps: 10, daily_goal: 8, idle_reset: false, idle_mins: 10, snooze_mins: 5,
   active_hours: true, start: "09:00", end: "18:00", days: [0, 1, 2, 3, 4],
-  launch_at_login: true, sound: true, language: "system",
+  launch_at_login: true, sound: true, language: "system", theme: "system",
 };
 const counting = {
   phase: "counting", secs_left: 23 * 60, paused_until: null,

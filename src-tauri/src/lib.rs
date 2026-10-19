@@ -57,6 +57,7 @@ pub fn run() {
             }
             match event {
                 WindowEvent::Focused(false) => popup::on_blur(window.app_handle()),
+                WindowEvent::Moved(pos) => popup::on_moved(window.app_handle(), *pos),
                 // Alt+F4 / Cmd+W hide the popup; only "Quit" exits.
                 WindowEvent::CloseRequested { api, .. } => {
                     api.prevent_close();
@@ -68,6 +69,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             popup::hide_popup,
             popup::set_popup_pinned,
+            popup::reset_popup_position,
             quit_app,
             breaks::get_status,
             breaks::answer,

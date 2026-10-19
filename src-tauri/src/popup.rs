@@ -1,9 +1,11 @@
 //! The tray popup: one frameless window anchored to the tray icon.
 //!
 //! Info mode (opened by the user) hides when it loses focus, unless the user
-//! has pinned it.
+//! has pinned it. Dragged by its header, the popup reopens where it was left;
+//! a double click on the header sends it back to the tray icon.
 //! Reminder mode (opened by the timer) is pinned: it shows without taking
-//! keyboard focus and stays up until the reminder is answered.
+//! keyboard focus and stays up until the reminder is answered. If the user had
+//! the popup pinned open, it stays open afterwards.
 
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -37,6 +39,10 @@ pub struct PopupState {
     /// Set from the pin button: blur no longer hides the popup, but the close
     /// button, Esc and the tray icon still do.
     user_pinned: AtomicBool,
+    /// Whether the popup was already open when the current reminder came up.
+    open_before_reminder: AtomicBool,
+    /// Where the user dragged the popup to.
+    dragged_position: Mutex<Option<PhysicalPosition<i32>>>,
 }
 
 fn window<R: Runtime>(app: &AppHandle<R>) -> Option<WebviewWindow<R>> {
@@ -53,6 +59,9 @@ pub fn mark_tray_located<R: Runtime>(app: &AppHandle<R>) {
 /// (e.g. opened from a second launch) use the top-right (macOS) or
 /// bottom-right (Windows) corner of the screen's work area.
 fn place<R: Runtime>(w: &WebviewWindow<R>, app: &AppHandle<R>) -> tauri::Result<()> {
+    if let Some(pos) = saved_position(w, app) {
+        return w.set_position(pos);
+    }
     let Some(monitor) = w.current_monitor()?.or(w.primary_monitor()?) else {
         return Ok(());
     };
@@ -93,6 +102,21 @@ fn place<R: Runtime>(w: &WebviewWindow<R>, app: &AppHandle<R>) -> tauri::Result<
     w.set_position(PhysicalPosition::new(x, y))
 }
 
+/// The popup's dragged-to position, if it's still on a connected screen.
+fn saved_position<R: Runtime>(
+    w: &WebviewWindow<R>,
+    app: &AppHandle<R>,
+) -> Option<PhysicalPosition<i32>> {
+    let pos = (*app.state::<PopupState>().dragged_position.lock().unwrap())?;
+    let on_screen = w.available_monitors().ok()?.iter().any(|m| {
+        let area = m.work_area();
+        let (x, y) = (area.position.x, area.position.y);
+        (x..x + area.size.width as i32).contains(&pos.x)
+            && (y..y + area.size.height as i32).contains(&pos.y)
+    });
+    on_screen.then_some(pos)
+}
+
 fn is_pinned<R: Runtime>(app: &AppHandle<R>) -> bool {
     app.state::<PopupState>().pinned.load(Ordering::Relaxed)
 }
@@ -110,11 +134,13 @@ pub fn show<R: Runtime>(app: &AppHandle<R>) {
 /// Opens the popup in reminder mode without stealing keyboard focus from
 /// whatever the user is typing into.
 pub fn show_reminder<R: Runtime>(app: &AppHandle<R>) {
-    app.state::<PopupState>()
-        .pinned
-        .store(true, Ordering::Relaxed);
     let Some(w) = window(app) else { return };
-    if w.is_visible().unwrap_or(false) {
+    let visible = w.is_visible().unwrap_or(false);
+    let state = app.state::<PopupState>();
+    if !state.pinned.swap(true, Ordering::Relaxed) {
+        state.open_before_reminder.store(visible, Ordering::Relaxed);
+    }
+    if visible {
         return;
     }
     let _ = place(&w, app);
@@ -155,15 +181,19 @@ pub fn hide<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
-/// Leaves reminder mode once it has been answered, and hides the popup.
+/// Leaves reminder mode once it has been answered, and hides the popup unless
+/// the user had it pinned open.
 pub fn release<R: Runtime>(app: &AppHandle<R>) {
-    app.state::<PopupState>()
-        .pinned
-        .store(false, Ordering::Relaxed);
+    let state = app.state::<PopupState>();
+    state.pinned.store(false, Ordering::Relaxed);
     if let Some(w) = window(app) {
         let _ = w.set_focusable(true);
     }
-    hide(app);
+    let keep_open = state.user_pinned.load(Ordering::Relaxed)
+        && state.open_before_reminder.load(Ordering::Relaxed);
+    if !keep_open {
+        hide(app);
+    }
 }
 
 pub fn toggle<R: Runtime>(app: &AppHandle<R>) {
@@ -188,13 +218,39 @@ pub fn toggle<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
+/// Dragging the popup moves keyboard focus off the webview while the popup
+/// stays the active window; that isn't the user clicking away.
+#[cfg(windows)]
+fn still_active<R: Runtime>(w: &WebviewWindow<R>) -> bool {
+    use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+    // SAFETY: no arguments; returns a window handle or null.
+    w.hwnd().is_ok_and(|hwnd| unsafe { GetForegroundWindow() } == hwnd)
+}
+
+#[cfg(not(windows))]
+fn still_active<R: Runtime>(w: &WebviewWindow<R>) -> bool {
+    w.is_focused().unwrap_or(false)
+}
+
 pub fn on_blur<R: Runtime>(app: &AppHandle<R>) {
     let state = app.state::<PopupState>();
     if is_pinned(app) || state.user_pinned.load(Ordering::Relaxed) {
         return;
     }
+    if window(app).is_some_and(|w| still_active(&w)) {
+        return;
+    }
     *app.state::<PopupState>().last_blur_hide.lock().unwrap() = Some(Instant::now());
     hide(app);
+}
+
+/// Remembers where the user dragged the popup. `place` only moves it while
+/// hidden, so moves of the visible popup are the user's.
+pub fn on_moved<R: Runtime>(app: &AppHandle<R>, pos: PhysicalPosition<i32>) {
+    let visible = window(app).is_some_and(|w| w.is_visible().unwrap_or(false));
+    if visible {
+        *app.state::<PopupState>().dragged_position.lock().unwrap() = Some(pos);
+    }
 }
 
 #[tauri::command]
@@ -207,4 +263,13 @@ pub fn set_popup_pinned(app: AppHandle, pinned: bool) {
     app.state::<PopupState>()
         .user_pinned
         .store(pinned, Ordering::Relaxed);
+}
+
+/// Forgets the dragged position and moves the popup back to the tray icon.
+#[tauri::command]
+pub fn reset_popup_position(app: AppHandle) {
+    *app.state::<PopupState>().dragged_position.lock().unwrap() = None;
+    if let Some(w) = window(&app) {
+        let _ = place(&w, &app);
+    }
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
+  import { getCurrentWindow } from "@tauri-apps/api/window";
   import { openUrl } from "@tauri-apps/plugin-opener";
   import Settings from "$lib/Settings.svelte";
   import Squatter from "$lib/Squatter.svelte";
@@ -20,6 +21,7 @@
   let repsShown = $state(0);
   /** Keep the popup open when it loses focus. */
   let pinned = $state(false);
+  let systemDark = $state(false);
 
   function applySettings(view: SettingsView) {
     settings = view;
@@ -43,6 +45,31 @@
       unlistenUpdate.then((f) => f());
     };
   });
+
+  $effect(() => {
+    const query = matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => (systemDark = query.matches);
+    onChange();
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  });
+
+  const dark = $derived.by(() => {
+    const theme = settings?.settings.theme ?? "system";
+    return theme === "system" ? systemDark : theme === "dark";
+  });
+
+  $effect(() => {
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+  });
+
+  /** Flips light / dark; landing on the system's theme follows the system again. */
+  async function toggleTheme() {
+    if (!settings) return;
+    const theme = !dark === systemDark ? "system" : dark ? "light" : "dark";
+    const next = { ...$state.snapshot(settings.settings), theme };
+    applySettings(await invoke<SettingsView>("set_settings", { settings: next }));
+  }
 
   /** e.g. "Mon, Tue, Wed, Thu, Fri · 09:00–18:00" */
   const activeHours = $derived.by(() => {
@@ -76,6 +103,13 @@
     invoke("set_popup_pinned", { pinned });
   }
 
+  /** The header drags the popup; a double click sends it back to the tray. */
+  function onHeaderMousedown(e: MouseEvent) {
+    if (e.button !== 0 || (e.target as Element).closest("button")) return;
+    if (e.detail === 2) invoke("reset_popup_position");
+    else getCurrentWindow().startDragging();
+  }
+
   function quit() {
     invoke("quit_app");
   }
@@ -90,7 +124,8 @@
 <svelte:window onkeydown={onKeydown} oncontextmenu={(e) => e.preventDefault()} />
 
 <main>
-  <header>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <header onmousedown={onHeaderMousedown}>
     {#if view !== "main"}
       <div class="brand">
         <button class="icon" title={t("back")} aria-label={t("back")} onclick={() => (view = "main")}>
@@ -111,6 +146,24 @@
       {#if view === "main" && !reminder}
         <button class="icon" title={t("stats")} aria-label={t("stats")} onclick={() => (view = "stats")}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9" /></svg>
+        </button>
+        <button
+          class="icon"
+          title={dark ? t("lightTheme") : t("darkTheme")}
+          aria-label={dark ? t("lightTheme") : t("darkTheme")}
+          disabled={!settings}
+          onclick={toggleTheme}
+        >
+          {#if dark}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+              />
+            </svg>
+          {:else}
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
+          {/if}
         </button>
         <button
           class="icon"
@@ -159,7 +212,7 @@
         {#if status?.phase === "reminding"}
           <!-- Squat along: the counter follows the character. -->
           {#key status.phase}
-            <Squatter period={2.4} reps={status.reps} onrep={(n: number) => (repsShown = n)} />
+            <Squatter period={4} reps={status.reps} onrep={(n: number) => (repsShown = n)} />
           {/key}
         {:else}
           <Squatter />
@@ -211,12 +264,8 @@
       </section>
 
       <section class="why">
-        <h2>
-          {t("whyTitle", {
-            reps: settings?.settings.reps ?? 10,
-            mins: settings?.settings.interval_mins ?? 45,
-          })}
-        </h2>
+        <!-- The study's numbers, whatever the user's own settings are. -->
+        <h2>{t("whyTitle")}</h2>
         <p>{t("whyBody")}</p>
         <button class="link" onclick={() => openUrl(STUDY_URL)}>{t("readStudy")}</button>
       </section>
@@ -248,21 +297,21 @@
     --accent-2: #ff7a45;
     --accent-soft: #ffe9e1;
     --chart: #ef5a4c;
-    color-scheme: light dark;
+    color-scheme: light;
   }
-  @media (prefers-color-scheme: dark) {
-    :global(:root) {
-      --bg: #1c1716;
-      --surface: #262020;
-      --text: #f5ece9;
-      --muted: #a9958f;
-      --line: #3a302e;
-      --accent: #ff6e5e;
-      --accent-2: #ff8a55;
-      --accent-soft: #3a2724;
-      /* The dark accent is too light for chart marks on the dark surface. */
-      --chart: #ee5f50;
-    }
+  /* Set from the theme setting, with "system" resolved. */
+  :global(:root[data-theme="dark"]) {
+    --bg: #1c1716;
+    --surface: #262020;
+    --text: #f5ece9;
+    --muted: #a9958f;
+    --line: #3a302e;
+    --accent: #ff6e5e;
+    --accent-2: #ff8a55;
+    --accent-soft: #3a2724;
+    /* The dark accent is too light for chart marks on the dark surface. */
+    --chart: #ee5f50;
+    color-scheme: dark;
   }
 
   :global(html, body) {
@@ -290,6 +339,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+  header {
+    cursor: move;
+  }
+  header button {
+    cursor: pointer;
   }
   .brand {
     display: flex;

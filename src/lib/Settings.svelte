@@ -75,16 +75,27 @@
         </span>
       </label>
       <label class="row">
-        <span>{t("idle")}</span>
+        <span>{t("snoozeFor")}</span>
         <span class="field">
-          <input type="number" min="1" max="120" bind:value={s.idle_mins} onchange={save} />
+          <input type="number" min="1" max="60" bind:value={s.snooze_mins} onchange={save} />
           <span class="unit">{unit}</span>
         </span>
       </label>
       <label class="row">
-        <span>{t("snoozeFor")}</span>
+        <span>{t("idleReset")}</span>
+        <input type="checkbox" bind:checked={s.idle_reset} onchange={save} />
+      </label>
+      <label class="row" class:disabled={!s.idle_reset}>
+        <span>{t("idleAfter")}</span>
         <span class="field">
-          <input type="number" min="1" max="60" bind:value={s.snooze_mins} onchange={save} />
+          <input
+            type="number"
+            min="1"
+            max="120"
+            disabled={!s.idle_reset}
+            bind:value={s.idle_mins}
+            onchange={save}
+          />
           <span class="unit">{unit}</span>
         </span>
       </label>
@@ -139,6 +150,7 @@
           <option value="tr">Türkçe</option>
         </select>
       </label>
+
     </div>
   </section>
 
@@ -197,6 +209,10 @@
   }
   .row + .row {
     border-top: 1px solid var(--line);
+  }
+  .row.disabled > span:first-child,
+  input:disabled {
+    opacity: 0.5;
   }
   .field {
     display: flex;

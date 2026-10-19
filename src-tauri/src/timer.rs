@@ -2,8 +2,9 @@
 //! the system idle time, so it can be tested with a fake clock.
 //!
 //! - Active time accumulates only while the user is at the computer.
-//! - Idle ≥ threshold, or a wall-clock jump that long (sleep / lock), resets it:
-//!   the user already got up.
+//! - Idle ≥ threshold, or a wall-clock jump that long (sleep / lock), counts as
+//!   away: the countdown pauses, or restarts if `reset_when_away` is set (the
+//!   user already got up).
 //! - Outside active hours, or while paused, the timer doesn't run.
 //! - Active time ≥ interval opens a reminder, which stays open until answered.
 //!   If the user walks away from an open reminder, they're asked on return
@@ -31,6 +32,7 @@ impl ActiveHours {
 pub struct Config {
     pub interval: Duration,
     pub idle_threshold: Duration,
+    pub reset_when_away: bool,
     pub snooze: Duration,
     /// How often `tick` is called. A gap between ticks counts as active time
     /// only up to a few ticks, so a stalled loop can't fire a reminder early.
@@ -140,8 +142,14 @@ impl Engine {
         }
         self.paused_until = None;
 
-        if away || !self.in_active_hours(now) {
+        if !self.in_active_hours(now) {
             self.active = Duration::ZERO;
+            return None;
+        }
+        if away {
+            if self.cfg.reset_when_away {
+                self.active = Duration::ZERO;
+            }
             return None;
         }
 
@@ -256,9 +264,27 @@ mod tests {
         assert_eq!(e.phase(now), Phase::Reminding);
     }
 
+    fn resetting_engine() -> Engine {
+        Engine::new(Config {
+            reset_when_away: true,
+            ..engine().cfg
+        })
+    }
+
     #[test]
-    fn idle_past_threshold_resets() {
+    fn idle_past_threshold_pauses_by_default() {
         let mut e = engine();
+        run(&mut e, at(12, 10, 0), 30, BUSY);
+        run(&mut e, at(12, 10, 31), 20, 10 * MIN);
+        assert_eq!(e.remaining(), 15 * MIN);
+        let (events, _) = run(&mut e, at(12, 10, 52), 13, BUSY);
+        assert!(events.is_empty());
+        assert_eq!(e.tick(at(12, 11, 6), BUSY), Some(Event::Remind));
+    }
+
+    #[test]
+    fn idle_past_threshold_resets_when_enabled() {
+        let mut e = resetting_engine();
         run(&mut e, at(12, 10, 0), 30, BUSY);
         e.tick(at(12, 10, 31), 10 * MIN);
         assert_eq!(e.remaining(), 45 * MIN);
@@ -275,12 +301,20 @@ mod tests {
     }
 
     #[test]
-    fn wall_clock_jump_resets() {
-        let mut e = engine();
+    fn wall_clock_jump_resets_when_enabled() {
+        let mut e = resetting_engine();
         run(&mut e, at(12, 10, 0), 30, BUSY);
         // Laptop slept for an hour; on wake the user just touched the keyboard.
         e.tick(at(12, 11, 31), BUSY);
         assert_eq!(e.remaining(), 45 * MIN);
+    }
+
+    #[test]
+    fn wall_clock_jump_pauses_by_default() {
+        let mut e = engine();
+        run(&mut e, at(12, 10, 0), 30, BUSY);
+        e.tick(at(12, 11, 31), BUSY);
+        assert_eq!(e.remaining(), 15 * MIN);
     }
 
     #[test]
