@@ -116,7 +116,7 @@ const tr: Strings = {
   goal: "Hedef {n}",
   dayBreaks: "{day}: {n} mola",
   idleReset: "Uzaklaşınca sayacı baştan başlat",
-  idleAfter: "Uzaklaşmış sayılma süresi",
+  idleAfter: "Uzaklaşma süresi",
   snoozeFor: "Erteleme süresi",
   activeHours: "Yalnızca aktif saatlerde",
   from: "Başlangıç",

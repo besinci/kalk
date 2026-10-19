@@ -103,9 +103,9 @@ async function popup({ lang, theme, view, reminder }) {
       () => document.querySelector(".reps")?.textContent.trim().startsWith("4 "),
       { timeout: 60000 },
     );
-    await sleep(700);
+    await sleep(300);
   } else {
-    await sleep(1300);
+    await sleep(1900);
   }
   const png = await page.screenshot();
   await page.close();
