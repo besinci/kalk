@@ -25,7 +25,7 @@ gym, better blood sugar.
 
 <p align="center">
   <a href="https://apps.microsoft.com/detail/9NVMFFFQHT6S"><b>Microsoft Store</b></a> ·
-  <a href="https://github.com/besinci/kalk/releases/latest"><b>Download for macOS</b></a> ·
+  <a href="https://apps.apple.com/app/id6833371148"><b>Mac App Store</b></a> ·
   <a href="https://besinci.github.io/kalk/">Website</a>
 </p>
 
@@ -54,9 +54,9 @@ promise.
   It updates itself. (An installer is also on
   [Releases](https://github.com/besinci/kalk/releases/latest); it's unsigned, so
   SmartScreen warns you: *More info → Run anyway*.)
-- **macOS 11+:** the `.dmg` from
-  [Releases](https://github.com/besinci/kalk/releases/latest), signed and
-  notarized by Apple. It updates itself.
+- **macOS 11+:** [Mac App Store](https://apps.apple.com/app/id6833371148). It updates itself. (A
+  signed and notarized `.dmg` is also on
+  [Releases](https://github.com/besinci/kalk/releases/latest).)
 
 ## Privacy
 

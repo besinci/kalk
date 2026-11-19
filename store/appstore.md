@@ -6,7 +6,7 @@ primary language and **Turkish** as a localization.
 Shared fields:
 
 - **Bundle ID:** io.github.besinci.kalk
-- **SKU:** kalk
+- **SKU:** kalk-mac
 - **Privacy policy URL:** https://besinci.github.io/kalk/privacy.html
 - **Support URL:** https://github.com/besinci/kalk/issues
 - **Marketing URL:** https://besinci.github.io/kalk/
